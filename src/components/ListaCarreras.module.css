@@ -1,0 +1,68 @@
+.section {
+  margin-bottom: 2rem;
+}
+
+.lista {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.boton {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  padding: 1rem 1.25rem;
+  text-align: left;
+  border: 1px solid var(--f1-gray-border);
+  border-radius: 8px;
+  background: var(--f1-gray);
+  color: #e8e8e8;
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
+}
+
+.boton:hover {
+  background: #252525;
+  border-color: var(--f1-red-dim);
+  color: #fff;
+}
+
+.botonActivo {
+  composes: boton;
+  background: var(--f1-red);
+  border-color: var(--f1-red);
+  color: #fff;
+}
+
+.botonActivo:hover {
+  background: var(--f1-red-hover);
+  border-color: var(--f1-red-hover);
+}
+
+.nombre {
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.fecha {
+  font-size: 0.875rem;
+  color: var(--f1-text-muted);
+}
+
+.botonActivo .fecha {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+@media (min-width: 600px) {
+  .boton,
+  .botonActivo {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .nombre {
+    margin-bottom: 0;
+  }
+}

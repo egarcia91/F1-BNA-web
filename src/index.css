@@ -1,0 +1,93 @@
+:root {
+  font-family: system-ui, -apple-system, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  color: #e8e8e8;
+  background-color: #0a0a0a;
+  --f1-red: #e10600;
+  --f1-red-hover: #ff1a14;
+  --f1-red-dim: #a60500;
+  --f1-black: #0a0a0a;
+  --f1-gray: #1a1a1a;
+  --f1-gray-border: #2a2a2a;
+  --f1-text-muted: #888;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+}
+
+#root {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+h1 {
+  margin: 0 0 1.5rem;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 0.02em;
+}
+
+h1::after {
+  content: "";
+  display: block;
+  width: 3rem;
+  height: 3px;
+  background: var(--f1-red);
+  margin-top: 0.5rem;
+}
+
+h2 {
+  margin: 0 0 0.75rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
+}
+
+.volverNav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.volverBoton {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--f1-gray-border);
+  border-radius: 6px;
+  background: var(--f1-gray);
+  color: #e8e8e8;
+  font-size: 0.9rem;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.volverBoton:hover {
+  background: #252525;
+  border-color: var(--f1-red-dim);
+  color: #fff;
+}
+
+.volverContexto {
+  font-size: 0.875rem;
+  color: var(--f1-text-muted);
+}

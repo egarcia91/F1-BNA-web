@@ -1,0 +1,145 @@
+import type { Torneo } from '../types'
+
+const PUNTAJES_TABLA = [
+  { posicion: '1', puntos: 40 },
+  { posicion: '2', puntos: 35 },
+  { posicion: '3', puntos: 30 },
+  { posicion: '4', puntos: 25 },
+  { posicion: '5', puntos: 22 },
+  { posicion: '6', puntos: 20 },
+  { posicion: '7', puntos: 18 },
+  { posicion: '8', puntos: 16 },
+  { posicion: '9', puntos: 14 },
+  { posicion: '10', puntos: 12 },
+  { posicion: '11', puntos: 10 },
+  { posicion: '12', puntos: 9 },
+  { posicion: '13', puntos: 8 },
+  { posicion: '14', puntos: 7 },
+  { posicion: '15', puntos: 6 },
+]
+
+const PUNTAJES_ADICIONALES = `• 2 puntos por adelantamiento en pista (límite de 10 puntos por carrera)
+• 1 punto por adelantamiento a rezagados
+• 2 puntos por pole position
+• 1 punto por mantener la posición con respecto a la de largada
+• 2 puntos por vuelta más rápida`
+
+export const torneos: Torneo[] = [
+  {
+    id: 't1',
+    nombre: 'Copa BNA 2025',
+    lugar: 'Kartódromo Internacional de Buenos Aires - Oscar y Juan Gálvez',
+    reglas: [
+      'Categoría única, $50000 valor de la inscripción, 1 vuelta de reconocimiento, 3 vueltas de clasificación, 20 vueltas de carrera',
+    ],
+    puntajesTabla: PUNTAJES_TABLA,
+    puntajesAdicionales: PUNTAJES_ADICIONALES,
+    pilotos: [
+      { id: 'c1', nombre: 'Martin', apellido: 'Pena', equipo: 'Alpine', puntos: 71 },
+      { id: 'c2', nombre: 'Ezequiel', apellido: 'Garcia', equipo: 'Ferrari', puntos: 62 },
+      { id: 'c3', nombre: 'Diego', apellido: 'Fernandez', equipo: 'Aston Martin', puntos: 55 },
+      { id: 'c4', nombre: 'Ezequiel', apellido: 'Salvemini', equipo: 'Red Bull', puntos: 50 },
+      { id: 'c5', nombre: 'Matias', apellido: 'Amado', equipo: 'Aston Martin', puntos: 61 },
+      { id: 'c6', nombre: 'Federico', apellido: 'Di Paola', equipo: 'Ferrari', puntos: 42 },
+      { id: 'c7', nombre: 'Alejandro', apellido: 'Lafuente', equipo: 'Aston Martin', puntos: 30 },
+      { id: 'c8', nombre: 'Pablo', apellido: 'Carbonell', equipo: 'Alpine', puntos: 26 },
+      { id: 'c9', nombre: 'Fabian', apellido: 'Manquez', equipo: 'Red Bull', puntos: 18 },
+      { id: 'c10', nombre: 'Ezequiel', apellido: 'Barany', equipo: 'Red Bull', puntos: 15 },
+      { id: 'c11', nombre: 'Tomas', apellido: 'Ardnt', equipo: 'McLaren', puntos: 15 },
+      { id: 'c12', nombre: 'Raul', apellido: 'Palavecino', equipo: 'McLaren', puntos: 15 },
+      { id: 'c13', nombre: 'Javier', apellido: 'Boero', equipo: 'Alpine', puntos: 13 },
+      { id: 'c14', nombre: 'German', apellido: 'Panunzio', equipo: 'Ferrari', puntos: 7 },
+      { id: 'c15', nombre: 'Leandro', apellido: 'Quinteros', equipo: 'X', puntos: 4 },
+    ],
+    carreras: [
+      {
+        id: '1',
+        nombre: 'Fecha 1',
+        fecha: '2025-12-18',
+        lugar: 'Kartódromo Internacional de Buenos Aires - Oscar y Juan Gálvez',
+        corredores: [
+          { id: 'c1', nombre: 'Martin Pena' },
+          { id: 'c2', nombre: 'Ezequiel Garcia' },
+          { id: 'c3', nombre: 'Diego Fernandez' },
+          { id: 'c4', nombre: 'Ezequiel Salvemini' },
+          { id: 'c5', nombre: 'Matias Amado' },
+          { id: 'c6', nombre: 'Federico Di Paola' },
+          { id: 'c7', nombre: 'Alejandro Lafuente' },
+          { id: 'c8', nombre: 'Pablo Carbonell' },
+          { id: 'c9', nombre: 'Fabian Manquez' },
+          { id: 'c10', nombre: 'Ezequiel Barany' },
+          { id: 'c11', nombre: 'Tomas Ardnt' },
+          { id: 'c12', nombre: 'Raul Palavecino' },
+          { id: 'c13', nombre: 'Javier Boero' },
+          { id: 'c14', nombre: 'German Panunzio' },
+          { id: 'c15', nombre: 'Leandro Quinteros' },
+        ],
+      },
+    ],
+  },
+  {
+    id: 't2',
+    nombre: 'Copa BNA 2026',
+    lugar: 'Sedes rotativas (ver cada fecha)',
+    reglas: [
+      'Tres fechas. Suma de puntos define el campeón.',
+      'Clasificación por tiempo. Carrera sprint 20 vueltas.',
+      'Pilotos con mejor vuelta por fecha suman 1 punto extra.',
+    ],
+    puntajesTabla: PUNTAJES_TABLA,
+    puntajesAdicionales: PUNTAJES_ADICIONALES,
+    pilotos: [
+      { id: 'c5', nombre: 'Luis', apellido: 'Rodríguez', equipo: 'Equipo Norte', puntos: 72 },
+      { id: 'c6', nombre: 'Laura', apellido: 'Fernández', equipo: 'Equipo Norte', puntos: 68 },
+      { id: 'c7', nombre: 'Diego', apellido: 'Sánchez', equipo: 'Kart Sur', puntos: 55 },
+      { id: 'c8', nombre: 'Valentina', apellido: 'Torres', equipo: 'Kart Sur', puntos: 52 },
+      { id: 'c9', nombre: 'Martín', apellido: 'Gómez', equipo: 'BNA Racing', puntos: 48 },
+      { id: 'c10', nombre: 'Sofía', apellido: 'Ruiz', equipo: 'BNA Racing', puntos: 45 },
+      { id: 'c11', nombre: 'Andrés', apellido: 'Díaz', equipo: 'Kart Club', puntos: 40 },
+      { id: 'c12', nombre: 'Camila', apellido: 'López', equipo: 'Kart Club', puntos: 38 },
+      { id: 'c13', nombre: 'Federico', apellido: 'Castro', equipo: 'Equipo Central', puntos: 65 },
+      { id: 'c14', nombre: 'Lucía', apellido: 'Morales', equipo: 'Equipo Central', puntos: 60 },
+      { id: 'c15', nombre: 'Joaquín', apellido: 'Romero', equipo: 'Equipo Norte', puntos: 42 },
+      { id: 'c16', nombre: 'Elena', apellido: 'Vega', equipo: 'Kart Sur', puntos: 36 },
+      { id: 'c17', nombre: 'Ricardo', apellido: 'Méndez', equipo: 'Sin equipo', puntos: 0 },
+    ],
+    carreras: [
+      {
+        id: '2',
+        nombre: 'Fecha 1',
+        fecha: '2025-04-12',
+        lugar: 'Circuito Norte',
+        corredores: [
+          { id: 'c5', nombre: 'Luis Rodríguez' },
+          { id: 'c6', nombre: 'Laura Fernández' },
+          { id: 'c7', nombre: 'Diego Sánchez' },
+          { id: 'c8', nombre: 'Valentina Torres' },
+        ],
+      },
+      {
+        id: '3',
+        nombre: 'Fecha 2',
+        fecha: '2025-05-10',
+        lugar: 'Kartódromo Sur',
+        corredores: [
+          { id: 'c9', nombre: 'Martín Gómez' },
+          { id: 'c10', nombre: 'Sofía Ruiz' },
+          { id: 'c11', nombre: 'Andrés Díaz' },
+          { id: 'c12', nombre: 'Camila López' },
+        ],
+      },
+      {
+        id: '4',
+        nombre: 'Fecha 3 - Final',
+        fecha: '2025-06-14',
+        lugar: 'Kartódromo Internacional de Buenos Aires - Oscar y Juan Gálvez',
+        corredores: [
+          { id: 'c13', nombre: 'Federico Castro' },
+          { id: 'c14', nombre: 'Lucía Morales' },
+          { id: 'c15', nombre: 'Joaquín Romero' },
+          { id: 'c16', nombre: 'Elena Vega' },
+        ],
+      },
+    ],
+  },
+]
