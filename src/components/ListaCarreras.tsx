@@ -28,7 +28,12 @@ export function ListaCarreras({
               }
               onClick={() => onSeleccionar(carrera)}
             >
-              <span className={styles.nombre}>{carrera.nombre}</span>
+              <span className={styles.nombre}>
+                {carrera.mostrarEstrella && (
+                  <span className={styles.estrellaDorada} aria-hidden>★</span>
+                )}
+                {carrera.nombre}
+              </span>
               <span className={styles.fecha}>{carrera.fecha}</span>
             </button>
             {carreraSeleccionadaId === carrera.id && (

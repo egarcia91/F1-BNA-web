@@ -20,6 +20,8 @@ export interface Carrera {
   fecha: string
   /** Lugar o circuito donde se disputó la carrera */
   lugar?: string
+  /** Si es true, se muestra una estrella dorada a la izquierda del nombre (ej. carrera final) */
+  mostrarEstrella?: boolean
   corredores: Corredor[]
   datos?: Record<string, unknown>
 }

@@ -84,7 +84,7 @@ export const torneos: Torneo[] = [
     estado: 'en_progreso',
     lugar: 'Sedes rotativas (ver cada fecha)',
     reglas: [
-      'Tres fechas. Suma de puntos define el campeón.',
+      'Cuatro fechas. Suma de puntos define el campeón.',
       'Clasificación por tiempo. Carrera sprint 20 vueltas.',
       'Corredores con mejor vuelta por fecha suman 1 punto extra.',
     ],
@@ -108,8 +108,8 @@ export const torneos: Torneo[] = [
     carreras: [
       {
         id: '2',
-        nombre: 'Fecha 1',
-        fecha: '2025-04-12',
+        nombre: 'Night Race',
+        fecha: '2026-03-05',
         lugar: 'Circuito Norte',
         corredores: [
           { id: 'c5', nombre: 'Luis Rodríguez' },
@@ -120,8 +120,8 @@ export const torneos: Torneo[] = [
       },
       {
         id: '3',
-        nombre: 'Fecha 2',
-        fecha: '2025-05-10',
+        nombre: 'Grilla Invertida',
+        fecha: 'a definir',
         lugar: 'Kartódromo Sur',
         corredores: [
           { id: 'c9', nombre: 'Martín Gómez' },
@@ -132,9 +132,22 @@ export const torneos: Torneo[] = [
       },
       {
         id: '4',
-        nombre: 'Fecha 3 - Final',
-        fecha: '2025-06-14',
+        nombre: 'Sentido Antihorario',
+        fecha: 'a definir',
         lugar: 'Kartódromo Internacional de Buenos Aires - Oscar y Juan Gálvez',
+        corredores: [
+          { id: 'c13', nombre: 'Federico Castro' },
+          { id: 'c14', nombre: 'Lucía Morales' },
+          { id: 'c15', nombre: 'Joaquín Romero' },
+          { id: 'c16', nombre: 'Elena Vega' },
+        ],
+      },
+      {
+        id: '5',
+        nombre: 'Final',
+        fecha: 'a definir',
+        lugar: 'Kartódromo Internacional de Buenos Aires - Oscar y Juan Gálvez',
+        mostrarEstrella: true,
         corredores: [
           { id: 'c13', nombre: 'Federico Castro' },
           { id: 'c14', nombre: 'Lucía Morales' },

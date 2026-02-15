@@ -18,7 +18,12 @@ export function DetalleCarrera({ carrera }: DetalleCarreraProps) {
 
   return (
     <section className={styles.section}>
-      <h2>{carrera.nombre}</h2>
+      <h2 className={styles.tituloCarrera}>
+        {carrera.mostrarEstrella && (
+          <span className={styles.estrellaDorada} aria-hidden>★</span>
+        )}
+        {carrera.nombre}
+      </h2>
       <p className={styles.fecha}>Fecha: {carrera.fecha}</p>
       {carrera.lugar && (
         <p className={styles.lugar}>Lugar: {carrera.lugar}</p>

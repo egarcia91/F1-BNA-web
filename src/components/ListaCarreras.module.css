@@ -61,6 +61,14 @@
 .nombre {
   font-weight: 600;
   margin-bottom: 0.25rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.estrellaDorada {
+  color: #d4af37;
+  font-size: 1em;
 }
 
 .fecha {
