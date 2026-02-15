@@ -1,4 +1,5 @@
 import type { Carrera } from '../types'
+import { DetalleCarrera } from './DetalleCarrera'
 import styles from './ListaCarreras.module.css'
 
 interface ListaCarrerasProps {
@@ -17,12 +18,12 @@ export function ListaCarreras({
       <h2>Carreras</h2>
       <ul className={styles.lista}>
         {carreras.map((carrera) => (
-          <li key={carrera.id}>
+          <li key={carrera.id} className={styles.itemCarrera}>
             <button
               type="button"
               className={
                 carreraSeleccionadaId === carrera.id
-                  ? styles.botonActivo
+                  ? `${styles.botonActivo} ${styles.botonExpandido}`
                   : styles.boton
               }
               onClick={() => onSeleccionar(carrera)}
@@ -30,6 +31,11 @@ export function ListaCarreras({
               <span className={styles.nombre}>{carrera.nombre}</span>
               <span className={styles.fecha}>{carrera.fecha}</span>
             </button>
+            {carreraSeleccionadaId === carrera.id && (
+              <div className={styles.detalleWrapper}>
+                <DetalleCarrera carrera={carrera} />
+              </div>
+            )}
           </li>
         ))}
       </ul>

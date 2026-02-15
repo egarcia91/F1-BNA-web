@@ -28,10 +28,17 @@ export function ListaTorneos({
               onClick={() => onSeleccionar(torneo)}
             >
               <span className={styles.nombre}>{torneo.nombre}</span>
-              <span className={styles.cantidad}>
-                {torneo.carreras.length}{' '}
-                {torneo.carreras.length === 1 ? 'carrera' : 'carreras'}
-              </span>
+              <div className={styles.meta}>
+                {torneo.estado && (
+                  <span className={styles.estado}>
+                    {torneo.estado === 'concluido' ? 'Concluido' : 'En Progreso'}
+                  </span>
+                )}
+                <span className={styles.cantidad}>
+                  {torneo.carreras.length}{' '}
+                  {torneo.carreras.length === 1 ? 'carrera' : 'carreras'}
+                </span>
+              </div>
             </button>
           </li>
         ))}

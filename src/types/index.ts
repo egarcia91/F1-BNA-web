@@ -1,6 +1,6 @@
 /**
  * Corredor: datos flexibles para extender después (posición, puntos, mejor vuelta, etc.)
- * En contexto de torneo (pilotos) se usan también apellido, equipo y puntos.
+ * En contexto de torneo (resultados) se usan también apellido, equipo y puntos.
  */
 export interface Corredor {
   id: string
@@ -28,10 +28,15 @@ export interface Carrera {
  * Torneo: agrupa carreras con detalles (lugar, reglas, puntajes).
  * Cada torneo puede tener reglas y puntajes distintos.
  */
+/** Estado del torneo para mostrar en la lista */
+export type EstadoTorneo = 'concluido' | 'en_progreso'
+
 export interface Torneo {
   id: string
   nombre: string
   carreras: Carrera[]
+  /** Estado del torneo (ej. Concluido, En progreso) */
+  estado?: EstadoTorneo
   /** Lugar o sede general del torneo (si aplica) */
   lugar?: string
   /** Reglas del torneo */
@@ -40,7 +45,7 @@ export interface Torneo {
   puntajesTabla?: { posicion: string; puntos: number }[]
   /** Puntos adicionales (adelantamientos, pole, vuelta rápida, etc.) */
   puntajesAdicionales?: string
-  /** Pilotos del torneo (anotados). Pueden no correr en todas las fechas. */
-  pilotos?: Corredor[]
+  /** Resultados del torneo (corredores con puntos). Pueden no correr en todas las fechas. */
+  resultados?: Corredor[]
   datos?: Record<string, unknown>
 }

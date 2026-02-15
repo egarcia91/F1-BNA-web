@@ -45,11 +45,23 @@
   margin-bottom: 0.25rem;
 }
 
-.cantidad {
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
   font-size: 0.875rem;
+}
+
+.estado {
   color: var(--f1-text-muted);
 }
 
+.cantidad {
+  color: var(--f1-text-muted);
+}
+
+.botonActivo .estado,
 .botonActivo .cantidad {
   color: rgba(255, 255, 255, 0.9);
 }

@@ -4,8 +4,8 @@ import { torneos } from './data/torneos'
 import { ListaTorneos } from './components/ListaTorneos'
 import { ListaCarreras } from './components/ListaCarreras'
 import { DetalleTorneo } from './components/DetalleTorneo'
-import { ListaPilotosTorneo } from './components/ListaPilotosTorneo'
-import { DetalleCarrera } from './components/DetalleCarrera'
+import { ListaResultadosTorneo } from './components/ListaResultadosTorneo'
+import { SeccionPilotos } from './components/SeccionPilotos'
 
 function App() {
   const [torneoSeleccionado, setTorneoSeleccionado] = useState<Torneo | null>(
@@ -16,51 +16,37 @@ function App() {
   )
 
   const carrerasDelTorneo = torneoSeleccionado?.carreras ?? []
-  const mostrandoCorredores = carreraSeleccionada !== null
+  const toggleCarrera = (carrera: Carrera) => {
+    setCarreraSeleccionada((actual) =>
+      actual?.id === carrera.id ? null : carrera
+    )
+  }
 
   return (
     <>
       <h1>Karting BNA</h1>
-      {mostrandoCorredores ? (
+      <SeccionPilotos />
+      <ListaTorneos
+        torneos={torneos}
+        torneoSeleccionadoId={torneoSeleccionado?.id ?? null}
+        onSeleccionar={(t) => {
+          setTorneoSeleccionado(t)
+          setCarreraSeleccionada(null)
+        }}
+      />
+      {torneoSeleccionado && (
         <>
-          <nav className="volverNav">
-            <button
-              type="button"
-              className="volverBoton"
-              onClick={() => setCarreraSeleccionada(null)}
-            >
-              ← Volver a carreras
-            </button>
-            {torneoSeleccionado && (
-              <span className="volverContexto">
-                {torneoSeleccionado.nombre} · {carreraSeleccionada?.nombre}
-              </span>
-            )}
-          </nav>
-          <DetalleCarrera carrera={carreraSeleccionada} />
-        </>
-      ) : (
-        <>
-          <ListaTorneos
-            torneos={torneos}
-            torneoSeleccionadoId={torneoSeleccionado?.id ?? null}
-            onSeleccionar={(t) => {
-              setTorneoSeleccionado(t)
-              setCarreraSeleccionada(null)
-            }}
+          <div className="torneoStickyBar" aria-live="polite">
+            {torneoSeleccionado.nombre}
+            {carreraSeleccionada && ` - ${carreraSeleccionada.nombre}`}
+          </div>
+          <ListaCarreras
+            carreras={carrerasDelTorneo}
+            carreraSeleccionadaId={carreraSeleccionada?.id ?? null}
+            onSeleccionar={toggleCarrera}
           />
-          {torneoSeleccionado && (
-            <>
-              <ListaCarreras
-                carreras={carrerasDelTorneo}
-                carreraSeleccionadaId={carreraSeleccionada?.id ?? null}
-                onSeleccionar={setCarreraSeleccionada}
-              />
-              <ListaPilotosTorneo torneo={torneoSeleccionado} />
-              <DetalleTorneo torneo={torneoSeleccionado} />
-            </>
-          )}
-          <DetalleCarrera carrera={null} />
+          <ListaResultadosTorneo torneo={torneoSeleccionado} />
+          <DetalleTorneo torneo={torneoSeleccionado} />
         </>
       )}
     </>

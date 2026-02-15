@@ -28,13 +28,14 @@ export const torneos: Torneo[] = [
   {
     id: 't1',
     nombre: 'Copa BNA 2025',
+    estado: 'concluido',
     lugar: 'Kartódromo Internacional de Buenos Aires - Oscar y Juan Gálvez',
     reglas: [
       'Categoría única, $50000 valor de la inscripción, 1 vuelta de reconocimiento, 3 vueltas de clasificación, 20 vueltas de carrera',
     ],
     puntajesTabla: PUNTAJES_TABLA,
     puntajesAdicionales: PUNTAJES_ADICIONALES,
-    pilotos: [
+    resultados: [
       { id: 'c1', nombre: 'Martin', apellido: 'Pena', equipo: 'Alpine', puntos: 71 },
       { id: 'c2', nombre: 'Ezequiel', apellido: 'Garcia', equipo: 'Ferrari', puntos: 62 },
       { id: 'c3', nombre: 'Diego', apellido: 'Fernandez', equipo: 'Aston Martin', puntos: 55 },
@@ -80,15 +81,16 @@ export const torneos: Torneo[] = [
   {
     id: 't2',
     nombre: 'Copa BNA 2026',
+    estado: 'en_progreso',
     lugar: 'Sedes rotativas (ver cada fecha)',
     reglas: [
       'Tres fechas. Suma de puntos define el campeón.',
       'Clasificación por tiempo. Carrera sprint 20 vueltas.',
-      'Pilotos con mejor vuelta por fecha suman 1 punto extra.',
+      'Corredores con mejor vuelta por fecha suman 1 punto extra.',
     ],
     puntajesTabla: PUNTAJES_TABLA,
     puntajesAdicionales: PUNTAJES_ADICIONALES,
-    pilotos: [
+    resultados: [
       { id: 'c5', nombre: 'Luis', apellido: 'Rodríguez', equipo: 'Equipo Norte', puntos: 72 },
       { id: 'c6', nombre: 'Laura', apellido: 'Fernández', equipo: 'Equipo Norte', puntos: 68 },
       { id: 'c7', nombre: 'Diego', apellido: 'Sánchez', equipo: 'Kart Sur', puntos: 55 },

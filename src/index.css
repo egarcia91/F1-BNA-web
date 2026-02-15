@@ -91,3 +91,17 @@ button {
   font-size: 0.875rem;
   color: var(--f1-text-muted);
 }
+
+/* Barra fija con el nombre del torneo al hacer scroll */
+.torneoStickyBar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  padding: 0.75rem 0;
+  margin-bottom: 1rem;
+  background: var(--f1-black);
+  border-bottom: 2px solid var(--f1-red);
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #fff;
+}

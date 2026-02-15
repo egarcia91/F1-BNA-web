@@ -8,6 +8,20 @@
   gap: 0.5rem;
 }
 
+.itemCarrera {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.detalleWrapper {
+  margin-top: 0;
+  border: 1px solid var(--f1-gray-border);
+  border-top: none;
+  border-radius: 0 0 8px 8px;
+  overflow: hidden;
+}
+
 .boton {
   display: flex;
   flex-direction: column;
@@ -38,6 +52,10 @@
 .botonActivo:hover {
   background: var(--f1-red-hover);
   border-color: var(--f1-red-hover);
+}
+
+.botonExpandido {
+  border-radius: 8px 8px 0 0;
 }
 
 .nombre {
