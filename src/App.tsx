@@ -22,9 +22,21 @@ function App() {
     )
   }
 
+  const proximaCarrera = new Date(2026, 2, 5) // 5 de marzo de 2026
+  const hoy = new Date()
+  hoy.setHours(0, 0, 0, 0)
+  proximaCarrera.setHours(0, 0, 0, 0)
+  const diffMs = proximaCarrera.getTime() - hoy.getTime()
+  const diasHastaCarrera = Math.max(0, Math.ceil(diffMs / (1000 * 60 * 60 * 24)))
+
   return (
     <>
-      <h1>Karting BNA</h1>
+      <header className="headerTitulo">
+        <h1>Karting BNA</h1>
+        <span className="cartelProximaCarrera">
+          Faltan {diasHastaCarrera} días
+        </span>
+      </header>
       <SeccionPilotos />
       <ListaTorneos
         torneos={torneos}

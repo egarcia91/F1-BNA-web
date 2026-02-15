@@ -6,9 +6,195 @@
   border: 1px solid var(--f1-gray-border);
 }
 
+.botonTitulo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0;
+  margin: 0 0 0;
+  border: none;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+  transition: opacity 0.2s;
+}
+
+.botonTitulo:hover {
+  opacity: 0.9;
+}
+
 .titulo {
-  margin: 0 0 1rem;
   font-size: 1.25rem;
   font-weight: 600;
   color: #fff;
+}
+
+.chevron,
+.chevronAbierto {
+  font-size: 0.75rem;
+  color: var(--f1-text-muted);
+  transition: transform 0.2s;
+}
+
+.chevronAbierto {
+  transform: rotate(-180deg);
+}
+
+.lista {
+  margin: 1rem 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.item {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: #252525;
+  border: 1px solid var(--f1-gray-border);
+  border-radius: 6px;
+}
+
+/* Rurikon Blue - fondo para ítems Red Bull */
+.itemRedBull {
+  background: #1a2a49;
+  border-color: #2a3a5c;
+}
+
+/* British Racing Green - fondo para ítems Aston Martin */
+.itemAstonMartin {
+  background: #004225;
+  border-color: #005a30;
+}
+
+/* Rosso Corsa - fondo para ítems Ferrari */
+.itemFerrari {
+  background: #d40000;
+  border-color: #a00000;
+}
+
+/* Naranja - fondo para ítems McLaren */
+.itemMcLaren {
+  background: #ff8800;
+  border-color: #cc6d00;
+}
+
+.itemMcLaren .itemContenido .nombre,
+.itemMcLaren .dato,
+.itemMcLaren .datoLabel {
+  color: #000;
+}
+
+/* Fondo blanco para ítems Mercedes */
+.itemMercedes {
+  background: #fff;
+  border-color: #ddd;
+}
+
+.itemMercedes .itemContenido .nombre,
+.itemMercedes .dato,
+.itemMercedes .datoLabel {
+  color: #000;
+}
+
+.itemFerrari .itemContenido .nombre {
+  color: #000;
+}
+
+.itemFerrari .dato,
+.itemFerrari .datoLabel {
+  color: #ffeb3b;
+}
+
+/* Alpine: dos triángulos en diagonal (rosa y azul) */
+.itemAlpine {
+  background: linear-gradient(45deg, #e8008c 50%, #0082c6 50%);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* En móvil: más rosa que azul para mejor lectura del texto negro */
+@media (max-width: 768px) {
+  .itemAlpine {
+    background: linear-gradient(45deg, #e8008c 70%, #0082c6 70%);
+  }
+}
+
+.itemAlpine .itemContenido .nombre,
+.itemAlpine .dato,
+.itemAlpine .datoLabel {
+  color: #000;
+}
+
+.itemRedBull .itemContenido .nombre {
+  color: var(--f1-red);
+}
+
+.itemRedBull .dato,
+.itemRedBull .datoLabel {
+  color: #f0c14b;
+}
+
+.logoWrap {
+  flex-shrink: 0;
+  width: 2.5rem;
+  height: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+}
+
+.logoEscuderia {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  display: block;
+  background: transparent;
+}
+
+.itemContenido {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.itemContenido .nombre {
+  font-weight: 600;
+  color: #fff;
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+  font-size: 0.875rem;
+  color: var(--f1-text-muted);
+}
+
+.dato {
+  color: #e8e8e8;
+}
+
+.datoLabel {
+  color: var(--f1-text-muted);
+  font-weight: 500;
+}
+
+.escuderia {
+  margin-left: auto;
+  color: var(--f1-red);
+  font-weight: 600;
 }

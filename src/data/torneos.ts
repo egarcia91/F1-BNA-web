@@ -55,7 +55,7 @@ export const torneos: Torneo[] = [
     carreras: [
       {
         id: '1',
-        nombre: 'Fecha 1',
+        nombre: 'Única',
         fecha: '2025-12-18',
         lugar: 'Kartódromo Internacional de Buenos Aires - Oscar y Juan Gálvez',
         corredores: [

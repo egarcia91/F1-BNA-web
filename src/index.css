@@ -28,6 +28,29 @@ body {
   padding: 1.5rem;
 }
 
+.headerTitulo {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.headerTitulo h1 {
+  margin: 0;
+}
+
+.cartelProximaCarrera {
+  flex-shrink: 0;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--f1-text-muted);
+  background: var(--f1-gray);
+  border: 1px solid var(--f1-gray-border);
+  border-radius: 6px;
+}
+
 h1 {
   margin: 0 0 1.5rem;
   font-size: 1.75rem;
