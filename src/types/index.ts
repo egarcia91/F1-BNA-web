@@ -14,6 +14,12 @@ export interface Corredor {
 /**
  * Carrera: lista de corredores, lugar/sede y datos opcionales.
  */
+/** Par de nombre + horario para series/horarios de una carrera */
+export interface SerieHorario {
+  nombre: string
+  horario: string
+}
+
 export interface Carrera {
   id: string
   nombre: string
@@ -22,6 +28,10 @@ export interface Carrera {
   lugar?: string
   /** Si es true, se muestra una estrella dorada a la izquierda del nombre (ej. carrera final) */
   mostrarEstrella?: boolean
+  /** Series con horario (ej. Serie 1 : 21:30) */
+  series?: SerieHorario[]
+  /** Texto descriptivo de la carrera (ej. criterios de clasificación para la final) */
+  detalle?: string
   corredores: Corredor[]
   datos?: Record<string, unknown>
 }

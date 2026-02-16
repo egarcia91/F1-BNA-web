@@ -9,7 +9,14 @@ interface ListaResultadosTorneoProps {
 export function ListaResultadosTorneo({ torneo }: ListaResultadosTorneoProps) {
   const [expandido, setExpandido] = useState(false)
 
-  if (!torneo || !torneo.resultados || torneo.resultados.length === 0) return null
+  const enProgreso = torneo?.estado === 'en_progreso'
+  const hayResultados =
+    torneo?.resultados != null && torneo.resultados.length > 0
+  if (!torneo || (!hayResultados && !enProgreso)) return null
+
+  const esParcial = enProgreso
+  const tituloItem = esParcial ? 'Resultados Parciales' : 'Resultados finales'
+  const filas = esParcial ? [] : (torneo.resultados ?? [])
 
   return (
     <section className={styles.section}>
@@ -24,7 +31,7 @@ export function ListaResultadosTorneo({ torneo }: ListaResultadosTorneoProps) {
               aria-expanded={expandido}
               aria-controls="resultados-finales-tabla"
             >
-              <span className={styles.itemTitulo}>Resultados finales</span>
+              <span className={styles.itemTitulo}>{tituloItem}</span>
               <span className={expandido ? styles.chevronAbierto : styles.chevron}>
                 ▼
               </span>
@@ -41,7 +48,7 @@ export function ListaResultadosTorneo({ torneo }: ListaResultadosTorneoProps) {
                   </tr>
                 </thead>
                 <tbody>
-                  {torneo.resultados.map((corredor, i) => (
+                  {filas.map((corredor, i) => (
                     <tr
                       key={corredor.id}
                       className={
