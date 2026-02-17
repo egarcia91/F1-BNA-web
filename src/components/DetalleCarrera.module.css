@@ -181,6 +181,22 @@
   color: var(--f1-text-muted);
 }
 
+/* Al ordenar por mejor tiempo: el mejor en blanco, el resto en gris */
+.tiempoMejor {
+  color: #fff;
+  font-weight: 600;
+}
+
+.tiempoResto {
+  color: var(--f1-text-muted);
+}
+
+.diferenciaTiempo {
+  color: #22c55e;
+  font-variant-numeric: tabular-nums;
+  margin-right: 0.25rem;
+}
+
 .posicion {
   font-size: 0.9rem;
   font-weight: 600;

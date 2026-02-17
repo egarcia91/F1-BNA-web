@@ -6,6 +6,8 @@ export interface Corredor {
   id: string
   nombre: string
   apellido?: string
+  /** Ruta a la foto del piloto en public (ej. "pilotos/ezequiel-salvemini.jpg"). Si no se define, se usa pilotos/{nombre-apellido}.jpg */
+  foto?: string
   equipo?: string
   puntos?: number
   datos?: Record<string, unknown>

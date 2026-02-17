@@ -22,7 +22,7 @@ export const pilotos: Corredor[] = [
   { id: 'c23', nombre: 'Federico', apellido: 'Mammana', equipo: 'Ferrari', puntos: 0, datos: { numero: 13, peso: 93 } },
   { id: 'c24', nombre: 'German', apellido: 'Estrada', equipo: 'Ferrari', puntos: 0, datos: { numero: 47, peso: 70 } },
   { id: 'c16', nombre: 'Sebastian', apellido: 'Egozcue', equipo: 'McLaren', puntos: 0, datos: { numero: 5, peso: 78 } },
-  { id: 'c12', nombre: 'Raul', apellido: 'Palavechino', equipo: 'McLaren', puntos: 0, datos: { numero: 29, peso: 91 } },
+  { id: 'c12', nombre: 'Raul', apellido: 'Palavecino', equipo: 'McLaren', puntos: 0, datos: { numero: 29, peso: 91 } },
   { id: 'c25', nombre: 'Roberto', apellido: 'Piombi', equipo: 'McLaren', puntos: 0, datos: { numero: 20, peso: 100 } },
   { id: 'c26', nombre: 'Manuel', apellido: 'Cavallero', equipo: 'McLaren', puntos: 0, datos: { numero: 16 } },
   { id: 'c27', nombre: 'Andres', apellido: 'soto', equipo: 'McLaren', puntos: 0, datos: { numero: 27 } },

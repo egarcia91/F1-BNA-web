@@ -7,6 +7,19 @@ function nombreCompleto(p: Corredor) {
   return [p.nombre, p.apellido].filter(Boolean).join(' ')
 }
 
+/** Ruta a la foto del piloto en public. Si tiene `foto` se usa; si no, pilotos/{nombre-apellido}.jpg */
+function rutaFotoPiloto(p: Corredor): string {
+  if (p.foto) return p.foto.startsWith('/') ? p.foto : `/${p.foto}`
+  const full = [p.nombre, p.apellido].filter(Boolean).join(' ')
+  const slug = full
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/\p{Diacritic}/gu, '')
+    .replace(/\s+/g, '-')
+    .replace(/[^a-z0-9-]/g, '')
+  return `/pilotos/${slug}.jpg`
+}
+
 function datoNumero(p: Corredor) {
   const n = p.datos && typeof p.datos === 'object' && 'numero' in p.datos
     ? (p.datos as { numero?: number }).numero
@@ -23,6 +36,11 @@ function datoPeso(p: Corredor) {
 
 export function SeccionPilotos() {
   const [visible, setVisible] = useState(false)
+  const [fotosFallidas, setFotosFallidas] = useState<Set<string>>(new Set())
+
+  const ocultarFoto = (id: string) => {
+    setFotosFallidas((prev) => new Set(prev).add(id))
+  }
 
   return (
     <section className={styles.section}>
@@ -103,6 +121,14 @@ export function SeccionPilotos() {
                 />
               )}
             </div>
+            {!fotosFallidas.has(piloto.id) && (
+              <img
+                src={rutaFotoPiloto(piloto)}
+                alt=""
+                className={styles.fotoRostro}
+                onError={() => ocultarFoto(piloto.id)}
+              />
+            )}
             <div className={styles.itemContenido}>
             <span className={styles.nombre}>{nombreCompleto(piloto)}</span>
             <span className={styles.meta}>

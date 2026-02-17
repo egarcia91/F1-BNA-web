@@ -88,6 +88,11 @@ export function DetalleCarrera({ carrera }: DetalleCarreraProps) {
   }
 
   const n = corredoresOrdenados.length
+  const mejorTiempoAbsoluto =
+    ordenPor === 'mejorTiempo' && corredoresOrdenados[0]
+      ? getMejorTiempo(corredoresOrdenados[0])
+      : null
+
   const posicionEnFila =
     ordenPor === 'posicion'
       ? ordenPosicion === 'asc'
@@ -175,6 +180,12 @@ export function DetalleCarrera({ carrera }: DetalleCarreraProps) {
                 'mejorTiempo' in corredor.datos
                   ? (corredor.datos as { mejorTiempo?: number }).mejorTiempo
                   : undefined
+              const diferencia =
+                ordenPor === 'mejorTiempo' &&
+                mejorTiempoAbsoluto != null &&
+                mejorTiempo != null
+                  ? mejorTiempo - mejorTiempoAbsoluto
+                  : null
               return (
                 <tr key={corredor.id} className={styles.fila}>
                   <td className={styles.tdPosicion}>
@@ -188,7 +199,22 @@ export function DetalleCarrera({ carrera }: DetalleCarreraProps) {
                       {nombreCorto(corredor.nombre)}
                     </span>
                   </td>
-                  <td className={styles.tdTiempo}>
+                  <td
+                    className={
+                      ordenPor === 'mejorTiempo' && index === 0
+                        ? `${styles.tdTiempo} ${styles.tiempoMejor}`
+                        : ordenPor === 'mejorTiempo'
+                          ? `${styles.tdTiempo} ${styles.tiempoResto}`
+                          : styles.tdTiempo
+                    }
+                  >
+                    {ordenPor === 'mejorTiempo' &&
+                      index >= 1 &&
+                      diferencia != null && (
+                        <span className={styles.diferenciaTiempo}>
+                          +{diferencia.toFixed(3)}{' '}
+                        </span>
+                      )}
                     {mejorTiempo != null
                       ? `${mejorTiempo.toFixed(3)} s`
                       : '—'}
