@@ -43,7 +43,7 @@ function nombreCorto(nombreCompleto: string): string {
 }
 
 type OrdenPosicion = 'asc' | 'desc'
-type OrdenPor = 'posicion' | 'mejorTiempo'
+type OrdenPor = 'posicion' | 'mejorTiempo' | 'ordenLargada'
 
 function getMejorTiempo(c: { datos?: Record<string, unknown> }): number | null {
   if (!c.datos || typeof c.datos !== 'object' || !('mejorTiempo' in c.datos))
@@ -52,9 +52,19 @@ function getMejorTiempo(c: { datos?: Record<string, unknown> }): number | null {
   return typeof v === 'number' ? v : null
 }
 
+function getOrdenLargada(c: { datos?: Record<string, unknown> }): number | null {
+  if (!c.datos || typeof c.datos !== 'object' || !('ordenLargada' in c.datos))
+    return null
+  const v = (c.datos as { ordenLargada?: number }).ordenLargada
+  return typeof v === 'number' ? v : null
+}
+
+type ColumnaMovil = 'karting' | 'mejorTiempo' | 'vueltas' | 'ordenLargada'
+
 export function DetalleCarrera({ carrera }: DetalleCarreraProps) {
   const [ordenPosicion, setOrdenPosicion] = useState<OrdenPosicion>('asc')
   const [ordenPor, setOrdenPor] = useState<OrdenPor>('posicion')
+  const [columnaMovil, setColumnaMovil] = useState<ColumnaMovil>('mejorTiempo')
 
   if (!carrera) {
     return (
@@ -75,6 +85,13 @@ export function DetalleCarrera({ carrera }: DetalleCarreraProps) {
         return ta - tb
       })
     }
+    if (ordenPor === 'ordenLargada') {
+      return list.sort((a, b) => {
+        const oa = getOrdenLargada(a) ?? Infinity
+        const ob = getOrdenLargada(b) ?? Infinity
+        return ordenPosicion === 'asc' ? oa - ob : ob - oa
+      })
+    }
     return ordenPosicion === 'desc' ? list.reverse() : list
   }, [carrera.corredores, ordenPosicion, ordenPor])
 
@@ -87,18 +104,28 @@ export function DetalleCarrera({ carrera }: DetalleCarreraProps) {
     setOrdenPor('mejorTiempo')
   }
 
-  const n = corredoresOrdenados.length
+  const toggleOrdenLargada = () => {
+    setOrdenPor('ordenLargada')
+    setOrdenPosicion((o) => (o === 'asc' ? 'desc' : 'asc'))
+  }
+
   const mejorTiempoAbsoluto =
     ordenPor === 'mejorTiempo' && corredoresOrdenados[0]
       ? getMejorTiempo(corredoresOrdenados[0])
       : null
 
-  const posicionEnFila =
-    ordenPor === 'posicion'
+  /** Posición de llegada en la carrera (orden original); no cambia al reordenar por otras columnas */
+  const getPosicionCarrera = (corredor: (typeof carrera.corredores)[0]) => {
+    const idx = carrera.corredores.findIndex((c) => c.id === corredor.id)
+    return idx >= 0 ? idx + 1 : '—'
+  }
+
+  const ariaSortOrdenLargada =
+    ordenPor === 'ordenLargada'
       ? ordenPosicion === 'asc'
-        ? (i: number) => i + 1
-        : (i: number) => n - i
-      : (i: number) => i + 1
+        ? 'ascending'
+        : 'descending'
+      : undefined
   return (
     <section className={styles.section}>
       <h2 className={styles.tituloCarrera}>
@@ -124,7 +151,79 @@ export function DetalleCarrera({ carrera }: DetalleCarreraProps) {
         <p className={styles.detalle}>{carrera.detalle}</p>
       )}
       <h3 className={styles.subtitulo}>Corredores</h3>
-      <div className={styles.tablaWrapper}>
+      {(carrera.corredores.some(
+        (c) =>
+          c.datos &&
+          typeof c.datos === 'object' &&
+          'karting' in c.datos
+      ) ||
+        carrera.corredores.some(
+          (c) =>
+            c.datos &&
+            typeof c.datos === 'object' &&
+            'vueltas' in c.datos
+        ) ||
+        carrera.corredores.some(
+          (c) =>
+            c.datos &&
+            typeof c.datos === 'object' &&
+            'ordenLargada' in c.datos
+        )) && (
+        <div className={styles.toggleSelect}>
+            <label htmlFor="columna-movil-select" className={styles.toggleSelectLabel}>
+              Ver columna:
+            </label>
+            <select
+              id="columna-movil-select"
+              value={columnaMovil}
+              onChange={(e) => setColumnaMovil(e.target.value as ColumnaMovil)}
+              className={styles.toggleSelectNative}
+              aria-label="Elegir columna a mostrar"
+            >
+              {carrera.corredores.some(
+                (c) => c.datos && typeof c.datos === 'object' && 'karting' in c.datos
+              ) && (
+                <option value="karting">Karting</option>
+              )}
+              <option value="mejorTiempo">Mejor tiempo</option>
+              {carrera.corredores.some(
+                (c) => c.datos && typeof c.datos === 'object' && 'vueltas' in c.datos
+              ) && (
+                <option value="vueltas">Vueltas</option>
+              )}
+              {carrera.corredores.some(
+                (c) => c.datos && typeof c.datos === 'object' && 'ordenLargada' in c.datos
+              ) && (
+                <option value="ordenLargada">Orden largada</option>
+              )}
+            </select>
+        </div>
+      )}
+      <div
+        className={styles.tablaWrapper}
+        data-columna-movil={
+          carrera.corredores.some(
+            (c) =>
+              c.datos &&
+              typeof c.datos === 'object' &&
+              'karting' in c.datos
+          ) ||
+          carrera.corredores.some(
+            (c) =>
+              c.datos &&
+              typeof c.datos === 'object' &&
+              'vueltas' in c.datos
+          ) ||
+          carrera.corredores.some(
+            (c) =>
+              c.datos &&
+              typeof c.datos === 'object' &&
+              'ordenLargada' in c.datos
+          )
+            ? columnaMovil
+            : undefined
+        }
+      >
         <table className={styles.tabla}>
           <thead>
             <tr>
@@ -153,7 +252,46 @@ export function DetalleCarrera({ carrera }: DetalleCarreraProps) {
                 </button>
               </th>
               <th className={styles.th}>Nombre</th>
-              <th className={styles.th}>
+              {carrera.corredores.some(
+                (c) =>
+                  c.datos &&
+                  typeof c.datos === 'object' &&
+                  'karting' in c.datos
+              ) && (
+                <th className={`${styles.th} ${styles.thKarting}`}>Karting</th>
+              )}
+              {carrera.corredores.some(
+                (c) =>
+                  c.datos &&
+                  typeof c.datos === 'object' &&
+                  'vueltas' in c.datos
+              ) && (
+                <th className={`${styles.th} ${styles.thVueltas}`}>Vueltas</th>
+              )}
+              {carrera.corredores.some(
+                (c) =>
+                  c.datos &&
+                  typeof c.datos === 'object' &&
+                  'ordenLargada' in c.datos
+              ) && (
+                <th className={`${styles.th} ${styles.thOrdenLargada}`}>
+                  <button
+                    type="button"
+                    className={styles.thOrdenable}
+                    onClick={toggleOrdenLargada}
+                    aria-sort={ariaSortOrdenLargada}
+                    title="Ordenar por orden de largada"
+                  >
+                    Orden largada
+                    {ordenPor === 'ordenLargada' && (
+                      <span className={styles.thIndicador} aria-hidden>
+                        {ordenPosicion === 'asc' ? ' ↑' : ' ↓'}
+                      </span>
+                    )}
+                  </button>
+                </th>
+              )}
+              <th className={`${styles.th} ${styles.thTiempo}`}>
                 <button
                   type="button"
                   className={styles.thOrdenable}
@@ -173,7 +311,17 @@ export function DetalleCarrera({ carrera }: DetalleCarreraProps) {
           </thead>
           <tbody>
             {corredoresOrdenados.map((corredor, index) => {
-              const posicion = posicionEnFila(index)
+              const posicion = getPosicionCarrera(corredor)
+              const posicionCarreraNum =
+                carrera.corredores.findIndex((c) => c.id === corredor.id) + 1
+              const ordenLargadaVal =
+                ordenPor === 'ordenLargada' ? getOrdenLargada(corredor) : null
+              const diffPosicion =
+                ordenPor === 'ordenLargada' &&
+                ordenLargadaVal != null &&
+                posicionCarreraNum >= 1
+                  ? ordenLargadaVal - posicionCarreraNum
+                  : null
               const mejorTiempo =
                 corredor.datos &&
                 typeof corredor.datos === 'object' &&
@@ -199,6 +347,64 @@ export function DetalleCarrera({ carrera }: DetalleCarreraProps) {
                       {nombreCorto(corredor.nombre)}
                     </span>
                   </td>
+                  {carrera.corredores.some(
+                    (c) =>
+                      c.datos &&
+                      typeof c.datos === 'object' &&
+                      'karting' in c.datos
+                  ) && (
+                    <td className={styles.tdKarting}>
+                      {corredor.datos &&
+                      typeof corredor.datos === 'object' &&
+                      'karting' in corredor.datos &&
+                      typeof (corredor.datos as { karting?: number }).karting === 'number'
+                        ? (corredor.datos as { karting: number }).karting
+                        : '—'}
+                    </td>
+                  )}
+                  {carrera.corredores.some(
+                    (c) =>
+                      c.datos &&
+                      typeof c.datos === 'object' &&
+                      'vueltas' in c.datos
+                  ) && (
+                    <td className={styles.tdVueltas}>
+                      {corredor.datos &&
+                      typeof corredor.datos === 'object' &&
+                      'vueltas' in corredor.datos &&
+                      typeof (corredor.datos as { vueltas?: number }).vueltas === 'number'
+                        ? (corredor.datos as { vueltas: number }).vueltas
+                        : '—'}
+                    </td>
+                  )}
+                  {carrera.corredores.some(
+                    (c) =>
+                      c.datos &&
+                      typeof c.datos === 'object' &&
+                      'ordenLargada' in c.datos
+                  ) && (
+                    <td className={styles.tdOrdenLargada}>
+                      {ordenPor === 'ordenLargada' &&
+                        diffPosicion != null &&
+                        diffPosicion !== 0 && (
+                          <span
+                            className={
+                              diffPosicion > 0
+                                ? styles.diffPosicionMejora
+                                : styles.diffPosicionPerdida
+                            }
+                          >
+                            {diffPosicion > 0 ? `+${diffPosicion}` : diffPosicion}{' '}
+                          </span>
+                        )}
+                      {corredor.datos &&
+                      typeof corredor.datos === 'object' &&
+                      'ordenLargada' in corredor.datos &&
+                      typeof (corredor.datos as { ordenLargada?: number }).ordenLargada === 'number'
+                        ? (corredor.datos as { ordenLargada: number }).ordenLargada
+                        : '—'}
+                    </td>
+                  )}
                   <td
                     className={
                       ordenPor === 'mejorTiempo' && index === 0
