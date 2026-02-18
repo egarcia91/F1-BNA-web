@@ -8,6 +8,8 @@ export interface Corredor {
   apellido?: string
   /** Ruta a la foto del piloto en public (ej. "pilotos/ezequiel-salvemini.jpg"). Si no se define, se usa pilotos/{nombre-apellido}.jpg */
   foto?: string
+  /** Frase del piloto; si no existe, no se muestra el campo en la sección Pilotos */
+  frase?: string
   equipo?: string
   puntos?: number
   datos?: Record<string, unknown>

@@ -1,8 +1,9 @@
 import { useMemo, useState } from 'react'
-import type { Carrera } from '../types'
+import type { Carrera, Torneo } from '../types'
 import styles from './DetalleCarrera.module.css'
 
 interface DetalleCarreraProps {
+  torneo: Torneo | null
   carrera: Carrera | null
 }
 
@@ -59,12 +60,18 @@ function getOrdenLargada(c: { datos?: Record<string, unknown> }): number | null 
   return typeof v === 'number' ? v : null
 }
 
-type ColumnaMovil = 'karting' | 'mejorTiempo' | 'vueltas' | 'ordenLargada'
+type ColumnaMovil = 'karting' | 'mejorTiempo' | 'vueltas' | 'ordenLargada' | 'elo'
 
-export function DetalleCarrera({ carrera }: DetalleCarreraProps) {
+export function DetalleCarrera({ torneo, carrera }: DetalleCarreraProps) {
   const [ordenPosicion, setOrdenPosicion] = useState<OrdenPosicion>('asc')
   const [ordenPor, setOrdenPor] = useState<OrdenPor>('posicion')
   const [columnaMovil, setColumnaMovil] = useState<ColumnaMovil>('mejorTiempo')
+
+  /** Para Copa BNA 2026: carreras aún no corridas muestran las mismas columnas que "Única" (con desplegable en móvil) */
+  const mostrarColumnasCompletas =
+    !!carrera &&
+    carrera.corredores.length === 0 &&
+    torneo?.nombre === 'Copa BNA 2026'
 
   if (!carrera) {
     return (
@@ -120,6 +127,12 @@ export function DetalleCarrera({ carrera }: DetalleCarreraProps) {
     return idx >= 0 ? idx + 1 : '—'
   }
 
+  /** Elo tras la carrera: base 900; pos 1-8 suman 8..1; pos 9-16 restan 1..8 */
+  const eloPorPosicion = (pos: number): number => {
+    const delta = pos <= 8 ? 9 - pos : 8 - pos
+    return 900 + delta
+  }
+
   const ariaSortOrdenLargada =
     ordenPor === 'ordenLargada'
       ? ordenPosicion === 'asc'
@@ -168,7 +181,9 @@ export function DetalleCarrera({ carrera }: DetalleCarreraProps) {
             c.datos &&
             typeof c.datos === 'object' &&
             'ordenLargada' in c.datos
-        )) && (
+        ) ||
+        carrera.corredores.length > 0 ||
+        mostrarColumnasCompletas) && (
         <div className={styles.toggleSelect}>
             <label htmlFor="columna-movil-select" className={styles.toggleSelectLabel}>
               Ver columna:
@@ -180,22 +195,23 @@ export function DetalleCarrera({ carrera }: DetalleCarreraProps) {
               className={styles.toggleSelectNative}
               aria-label="Elegir columna a mostrar"
             >
-              {carrera.corredores.some(
+              {(carrera.corredores.some(
                 (c) => c.datos && typeof c.datos === 'object' && 'karting' in c.datos
-              ) && (
+              ) || mostrarColumnasCompletas) && (
                 <option value="karting">Karting</option>
               )}
               <option value="mejorTiempo">Mejor tiempo</option>
-              {carrera.corredores.some(
+              {(carrera.corredores.some(
                 (c) => c.datos && typeof c.datos === 'object' && 'vueltas' in c.datos
-              ) && (
+              ) || mostrarColumnasCompletas) && (
                 <option value="vueltas">Vueltas</option>
               )}
-              {carrera.corredores.some(
+              {(carrera.corredores.some(
                 (c) => c.datos && typeof c.datos === 'object' && 'ordenLargada' in c.datos
-              ) && (
+              ) || mostrarColumnasCompletas) && (
                 <option value="ordenLargada">Orden largada</option>
               )}
+              <option value="elo">Elo</option>
             </select>
         </div>
       )}
@@ -219,7 +235,9 @@ export function DetalleCarrera({ carrera }: DetalleCarreraProps) {
               c.datos &&
               typeof c.datos === 'object' &&
               'ordenLargada' in c.datos
-          )
+          ) ||
+          carrera.corredores.length > 0 ||
+          mostrarColumnasCompletas
             ? columnaMovil
             : undefined
         }
@@ -252,28 +270,28 @@ export function DetalleCarrera({ carrera }: DetalleCarreraProps) {
                 </button>
               </th>
               <th className={styles.th}>Nombre</th>
-              {carrera.corredores.some(
+              {(carrera.corredores.some(
                 (c) =>
                   c.datos &&
                   typeof c.datos === 'object' &&
                   'karting' in c.datos
-              ) && (
+              ) || mostrarColumnasCompletas) && (
                 <th className={`${styles.th} ${styles.thKarting}`}>Karting</th>
               )}
-              {carrera.corredores.some(
+              {(carrera.corredores.some(
                 (c) =>
                   c.datos &&
                   typeof c.datos === 'object' &&
                   'vueltas' in c.datos
-              ) && (
+              ) || mostrarColumnasCompletas) && (
                 <th className={`${styles.th} ${styles.thVueltas}`}>Vueltas</th>
               )}
-              {carrera.corredores.some(
+              {(carrera.corredores.some(
                 (c) =>
                   c.datos &&
                   typeof c.datos === 'object' &&
                   'ordenLargada' in c.datos
-              ) && (
+              ) || mostrarColumnasCompletas) && (
                 <th className={`${styles.th} ${styles.thOrdenLargada}`}>
                   <button
                     type="button"
@@ -307,10 +325,18 @@ export function DetalleCarrera({ carrera }: DetalleCarreraProps) {
                   )}
                 </button>
               </th>
+              <th className={`${styles.th} ${styles.thElo}`}>Elo</th>
             </tr>
           </thead>
           <tbody>
-            {corredoresOrdenados.map((corredor, index) => {
+            {mostrarColumnasCompletas && corredoresOrdenados.length === 0 ? (
+              <tr>
+                <td colSpan={7} className={styles.tdVacio}>
+                  Aún no se corrió
+                </td>
+              </tr>
+            ) : (
+            corredoresOrdenados.map((corredor, index) => {
               const posicion = getPosicionCarrera(corredor)
               const posicionCarreraNum =
                 carrera.corredores.findIndex((c) => c.id === corredor.id) + 1
@@ -347,12 +373,12 @@ export function DetalleCarrera({ carrera }: DetalleCarreraProps) {
                       {nombreCorto(corredor.nombre)}
                     </span>
                   </td>
-                  {carrera.corredores.some(
+                  {(carrera.corredores.some(
                     (c) =>
                       c.datos &&
                       typeof c.datos === 'object' &&
                       'karting' in c.datos
-                  ) && (
+                  ) || mostrarColumnasCompletas) && (
                     <td className={styles.tdKarting}>
                       {corredor.datos &&
                       typeof corredor.datos === 'object' &&
@@ -362,12 +388,12 @@ export function DetalleCarrera({ carrera }: DetalleCarreraProps) {
                         : '—'}
                     </td>
                   )}
-                  {carrera.corredores.some(
+                  {(carrera.corredores.some(
                     (c) =>
                       c.datos &&
                       typeof c.datos === 'object' &&
                       'vueltas' in c.datos
-                  ) && (
+                  ) || mostrarColumnasCompletas) && (
                     <td className={styles.tdVueltas}>
                       {corredor.datos &&
                       typeof corredor.datos === 'object' &&
@@ -377,12 +403,12 @@ export function DetalleCarrera({ carrera }: DetalleCarreraProps) {
                         : '—'}
                     </td>
                   )}
-                  {carrera.corredores.some(
+                  {(carrera.corredores.some(
                     (c) =>
                       c.datos &&
                       typeof c.datos === 'object' &&
                       'ordenLargada' in c.datos
-                  ) && (
+                  ) || mostrarColumnasCompletas) && (
                     <td className={styles.tdOrdenLargada}>
                       {ordenPor === 'ordenLargada' &&
                         diffPosicion != null &&
@@ -425,9 +451,28 @@ export function DetalleCarrera({ carrera }: DetalleCarreraProps) {
                       ? `${mejorTiempo.toFixed(3)} s`
                       : '—'}
                   </td>
+                  <td className={styles.tdElo}>
+                    {posicionCarreraNum >= 1 ? (
+                      <>
+                        {posicionCarreraNum <= 8 ? (
+                          <span className={styles.eloDeltaSuma}>
+                            +{9 - posicionCarreraNum}{' '}
+                          </span>
+                        ) : (
+                          <span className={styles.eloDeltaResta}>
+                            {8 - posicionCarreraNum}{' '}
+                          </span>
+                        )}
+                        {eloPorPosicion(posicionCarreraNum)}
+                      </>
+                    ) : (
+                      '—'
+                    )}
+                  </td>
                 </tr>
               )
-            })}
+            })
+            )}
           </tbody>
         </table>
       </div>

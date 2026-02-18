@@ -120,7 +120,8 @@
 
 .thKarting,
 .thVueltas,
-.thOrdenLargada {
+.thOrdenLargada,
+.thElo {
   text-align: right;
 }
 
@@ -165,7 +166,9 @@
   .tablaWrapper[data-columna-movil='karting'] .thVueltas,
   .tablaWrapper[data-columna-movil='karting'] .tdVueltas,
   .tablaWrapper[data-columna-movil='karting'] .thOrdenLargada,
-  .tablaWrapper[data-columna-movil='karting'] .tdOrdenLargada {
+  .tablaWrapper[data-columna-movil='karting'] .tdOrdenLargada,
+  .tablaWrapper[data-columna-movil='karting'] .thElo,
+  .tablaWrapper[data-columna-movil='karting'] .tdElo {
     display: none;
   }
   .tablaWrapper[data-columna-movil='mejorTiempo'] .thKarting,
@@ -173,7 +176,9 @@
   .tablaWrapper[data-columna-movil='mejorTiempo'] .thVueltas,
   .tablaWrapper[data-columna-movil='mejorTiempo'] .tdVueltas,
   .tablaWrapper[data-columna-movil='mejorTiempo'] .thOrdenLargada,
-  .tablaWrapper[data-columna-movil='mejorTiempo'] .tdOrdenLargada {
+  .tablaWrapper[data-columna-movil='mejorTiempo'] .tdOrdenLargada,
+  .tablaWrapper[data-columna-movil='mejorTiempo'] .thElo,
+  .tablaWrapper[data-columna-movil='mejorTiempo'] .tdElo {
     display: none;
   }
   .tablaWrapper[data-columna-movil='vueltas'] .thKarting,
@@ -181,7 +186,9 @@
   .tablaWrapper[data-columna-movil='vueltas'] .thTiempo,
   .tablaWrapper[data-columna-movil='vueltas'] .tdTiempo,
   .tablaWrapper[data-columna-movil='vueltas'] .thOrdenLargada,
-  .tablaWrapper[data-columna-movil='vueltas'] .tdOrdenLargada {
+  .tablaWrapper[data-columna-movil='vueltas'] .tdOrdenLargada,
+  .tablaWrapper[data-columna-movil='vueltas'] .thElo,
+  .tablaWrapper[data-columna-movil='vueltas'] .tdElo {
     display: none;
   }
   .tablaWrapper[data-columna-movil='ordenLargada'] .thKarting,
@@ -189,7 +196,19 @@
   .tablaWrapper[data-columna-movil='ordenLargada'] .thVueltas,
   .tablaWrapper[data-columna-movil='ordenLargada'] .tdVueltas,
   .tablaWrapper[data-columna-movil='ordenLargada'] .thTiempo,
-  .tablaWrapper[data-columna-movil='ordenLargada'] .tdTiempo {
+  .tablaWrapper[data-columna-movil='ordenLargada'] .tdTiempo,
+  .tablaWrapper[data-columna-movil='ordenLargada'] .thElo,
+  .tablaWrapper[data-columna-movil='ordenLargada'] .tdElo {
+    display: none;
+  }
+  .tablaWrapper[data-columna-movil='elo'] .thKarting,
+  .tablaWrapper[data-columna-movil='elo'] .tdKarting,
+  .tablaWrapper[data-columna-movil='elo'] .thVueltas,
+  .tablaWrapper[data-columna-movil='elo'] .tdVueltas,
+  .tablaWrapper[data-columna-movil='elo'] .thOrdenLargada,
+  .tablaWrapper[data-columna-movil='elo'] .tdOrdenLargada,
+  .tablaWrapper[data-columna-movil='elo'] .thTiempo,
+  .tablaWrapper[data-columna-movil='elo'] .tdTiempo {
     display: none;
   }
   .thDesktop {
@@ -225,12 +244,14 @@
   /* En celular la tercera columna visible alineada a derecha */
   .tdKarting,
   .tdVueltas,
-  .tdOrdenLargada {
+  .tdOrdenLargada,
+  .tdElo {
     text-align: right;
   }
   .thKarting,
   .thVueltas,
-  .thOrdenLargada {
+  .thOrdenLargada,
+  .thElo {
     text-align: right;
   }
 }
@@ -283,6 +304,23 @@
   font-variant-numeric: tabular-nums;
 }
 
+.tdElo {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.eloDeltaSuma {
+  color: #22c55e;
+  font-weight: 600;
+  margin-right: 0.2rem;
+}
+
+.eloDeltaResta {
+  color: #ef4444;
+  font-weight: 600;
+  margin-right: 0.2rem;
+}
+
 .nombreCorto {
   display: none;
 }
@@ -322,4 +360,11 @@
   font-size: 0.9rem;
   font-weight: 600;
   color: #fff;
+}
+
+.tdVacio {
+  text-align: center;
+  color: var(--f1-text-muted);
+  padding: 1rem;
+  font-style: italic;
 }

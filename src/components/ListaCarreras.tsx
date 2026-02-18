@@ -1,14 +1,16 @@
-import type { Carrera } from '../types'
+import type { Carrera, Torneo } from '../types'
 import { DetalleCarrera } from './DetalleCarrera'
 import styles from './ListaCarreras.module.css'
 
 interface ListaCarrerasProps {
+  torneo: Torneo | null
   carreras: Carrera[]
   carreraSeleccionadaId: string | null
   onSeleccionar: (carrera: Carrera) => void
 }
 
 export function ListaCarreras({
+  torneo,
   carreras,
   carreraSeleccionadaId,
   onSeleccionar,
@@ -38,7 +40,7 @@ export function ListaCarreras({
             </button>
             {carreraSeleccionadaId === carrera.id && (
               <div className={styles.detalleWrapper}>
-                <DetalleCarrera carrera={carrera} />
+                <DetalleCarrera torneo={torneo} carrera={carrera} />
               </div>
             )}
           </li>

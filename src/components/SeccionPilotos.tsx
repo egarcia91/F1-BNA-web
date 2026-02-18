@@ -82,6 +82,28 @@ function mejorPuestoPorPiloto(): Map<string, number> {
   return map
 }
 
+const ELO_BASE = 900
+/** Delta por posición: 1-8 suman 8..1, 9-16 restan 1..8 */
+function deltaEloPorPosicion(pos: number): number {
+  return pos <= 8 ? 9 - pos : 8 - pos
+}
+
+/** Elo actual por piloto: base 900 + suma de deltas de cada carrera en la que participó */
+function eloPorPiloto(): Map<string, number> {
+  const map = new Map<string, number>()
+  for (const torneo of torneos) {
+    for (const carrera of torneo.carreras) {
+      carrera.corredores.forEach((c, index) => {
+        const posicion = index + 1
+        const delta = deltaEloPorPosicion(posicion)
+        const id = c.id
+        map.set(id, (map.get(id) ?? ELO_BASE) + delta)
+      })
+    }
+  }
+  return map
+}
+
 export function SeccionPilotos() {
   const [visible, setVisible] = useState(false)
   const [fotosFallidas, setFotosFallidas] = useState<Set<string>>(new Set())
@@ -90,6 +112,7 @@ export function SeccionPilotos() {
 
   const carrerasPorPiloto = useMemo(contarCarrerasPorPiloto, [])
   const mejorPuestoPorPilotoMap = useMemo(mejorPuestoPorPiloto, [])
+  const eloPorPilotoMap = useMemo(eloPorPiloto, [])
 
   const toggleExpandir = (id: string) => {
     setExpandidoId((prev) => (prev === id ? null : id))
@@ -232,8 +255,14 @@ export function SeccionPilotos() {
                   </span>
                   <span className={styles.dato}>
                     <span className={styles.datoLabel}>Elo</span>{' '}
-                    900
+                    {eloPorPilotoMap.get(piloto.id) ?? ELO_BASE}
                   </span>
+                  {piloto.frase && (
+                    <span className={styles.datoFrase}>
+                      <span className={styles.datoLabel}>Frase</span>{' '}
+                      <span className={styles.datoFraseValor}>{piloto.frase}</span>
+                    </span>
+                  )}
                 </div>
               )}
             </div>
@@ -259,8 +288,14 @@ export function SeccionPilotos() {
                 </span>
                 <span className={styles.dato}>
                   <span className={styles.datoLabel}>Elo</span>{' '}
-                  900
+                  {eloPorPilotoMap.get(piloto.id) ?? ELO_BASE}
                 </span>
+                {piloto.frase && (
+                  <span className={styles.datoFrase}>
+                    <span className={styles.datoLabel}>Frase</span>{' '}
+                    <span className={styles.datoFraseValor}>{piloto.frase}</span>
+                  </span>
+                )}
               </div>
             )}
           </li>

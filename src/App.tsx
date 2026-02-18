@@ -53,6 +53,7 @@ function App() {
             {carreraSeleccionada && ` - ${carreraSeleccionada.nombre}`}
           </div>
           <ListaCarreras
+            torneo={torneoSeleccionado}
             carreras={carrerasDelTorneo}
             carreraSeleccionadaId={carreraSeleccionada?.id ?? null}
             onSeleccionar={toggleCarrera}
