@@ -7,7 +7,6 @@ interface DetalleCarreraProps {
   carrera: Carrera | null
 }
 
-const VOCALES = /[aeiouáéíóú]/gi
 const CONSONANTE = /[bcdfghjklmnpqrstvwxyzñ]/i
 
 /**
