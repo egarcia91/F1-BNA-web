@@ -1,7 +1,23 @@
-import { useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import type { Corredor } from '../types'
 import { pilotos } from '../data/pilotos'
+import { torneos } from '../data/torneos'
 import styles from './SeccionPilotos.module.css'
+
+const MEDIA_MOBILE = '(max-width: 768px)'
+
+function useEsMovil(): boolean {
+  const [esMovil, setEsMovil] = useState(() =>
+    typeof window !== 'undefined' && window.matchMedia(MEDIA_MOBILE).matches
+  )
+  useEffect(() => {
+    const mql = window.matchMedia(MEDIA_MOBILE)
+    const handler = () => setEsMovil(mql.matches)
+    mql.addEventListener('change', handler)
+    return () => mql.removeEventListener('change', handler)
+  }, [])
+  return esMovil
+}
 
 function nombreCompleto(p: Corredor) {
   return [p.nombre, p.apellido].filter(Boolean).join(' ')
@@ -34,9 +50,50 @@ function datoPeso(p: Corredor) {
   return w != null ? `${w} kg` : '—'
 }
 
+/** Cuenta de carreras en las que participó cada piloto (por id) en todos los torneos */
+function contarCarrerasPorPiloto(): Map<string, number> {
+  const map = new Map<string, number>()
+  for (const torneo of torneos) {
+    for (const carrera of torneo.carreras) {
+      for (const c of carrera.corredores) {
+        const id = c.id
+        map.set(id, (map.get(id) ?? 0) + 1)
+      }
+    }
+  }
+  return map
+}
+
+/** Mejor puesto (posición más baja = mejor) por piloto en todas las carreras; sin carrera = sin dato */
+function mejorPuestoPorPiloto(): Map<string, number> {
+  const map = new Map<string, number>()
+  for (const torneo of torneos) {
+    for (const carrera of torneo.carreras) {
+      carrera.corredores.forEach((c, index) => {
+        const posicion = index + 1
+        const id = c.id
+        const actual = map.get(id)
+        if (actual === undefined || posicion < actual) {
+          map.set(id, posicion)
+        }
+      })
+    }
+  }
+  return map
+}
+
 export function SeccionPilotos() {
   const [visible, setVisible] = useState(false)
   const [fotosFallidas, setFotosFallidas] = useState<Set<string>>(new Set())
+  const [expandidoId, setExpandidoId] = useState<string | null>(null)
+  const esMovil = useEsMovil()
+
+  const carrerasPorPiloto = useMemo(contarCarrerasPorPiloto, [])
+  const mejorPuestoPorPilotoMap = useMemo(mejorPuestoPorPiloto, [])
+
+  const toggleExpandir = (id: string) => {
+    setExpandidoId((prev) => (prev === id ? null : id))
+  }
 
   const ocultarFoto = (id: string) => {
     setFotosFallidas((prev) => new Set(prev).add(id))
@@ -58,25 +115,38 @@ export function SeccionPilotos() {
       </button>
       {visible && (
       <ul id="seccion-pilotos-lista" className={styles.lista}>
-        {pilotos.map((piloto) => (
+        {pilotos.map((piloto) => {
+          const itemClases =
+            piloto.equipo === 'Red Bull'
+              ? `${styles.item} ${styles.itemRedBull}`
+              : piloto.equipo === 'Aston Martin'
+                ? `${styles.item} ${styles.itemAstonMartin}`
+                : piloto.equipo === 'Alpine'
+                  ? `${styles.item} ${styles.itemAlpine}`
+                  : piloto.equipo === 'Ferrari'
+                    ? `${styles.item} ${styles.itemFerrari}`
+                    : piloto.equipo === 'McLaren'
+                      ? `${styles.item} ${styles.itemMcLaren}`
+                      : piloto.equipo === 'Mercedes'
+                        ? `${styles.item} ${styles.itemMercedes}`
+                        : styles.item
+          const expandido = expandidoId === piloto.id
+          return (
           <li
             key={piloto.id}
-            className={
-              piloto.equipo === 'Red Bull'
-                ? `${styles.item} ${styles.itemRedBull}`
-                : piloto.equipo === 'Aston Martin'
-                  ? `${styles.item} ${styles.itemAstonMartin}`
-                  : piloto.equipo === 'Alpine'
-                    ? `${styles.item} ${styles.itemAlpine}`
-                    : piloto.equipo === 'Ferrari'
-                      ? `${styles.item} ${styles.itemFerrari}`
-                      : piloto.equipo === 'McLaren'
-                        ? `${styles.item} ${styles.itemMcLaren}`
-                        : piloto.equipo === 'Mercedes'
-                          ? `${styles.item} ${styles.itemMercedes}`
-                          : styles.item
-            }
+            className={`${itemClases} ${expandido ? styles.itemExpandido : ''}`}
+            onClick={() => toggleExpandir(piloto.id)}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault()
+                toggleExpandir(piloto.id)
+              }
+            }}
+            aria-expanded={expandido}
           >
+            <div className={styles.itemFila}>
             <div className={styles.logoWrap}>
               {piloto.equipo === 'Red Bull' && (
                 <img
@@ -121,31 +191,81 @@ export function SeccionPilotos() {
                 />
               )}
             </div>
-            {!fotosFallidas.has(piloto.id) && (
-              <img
-                src={rutaFotoPiloto(piloto)}
-                alt=""
-                className={styles.fotoRostro}
-                onError={() => ocultarFoto(piloto.id)}
-              />
-            )}
             <div className={styles.itemContenido}>
-            <span className={styles.nombre}>{nombreCompleto(piloto)}</span>
-            <span className={styles.meta}>
-              <span className={styles.dato}>
-                <span className={styles.datoLabel}>Nº</span>{' '}
-                {datoNumero(piloto)}
+              <div className={styles.itemContenidoNombreYFoto}>
+                <div className={styles.itemContenidoIzq}>
+                  <span className={styles.nombre}>{nombreCompleto(piloto)}</span>
+                  {piloto.equipo !== 'Red Bull' && piloto.equipo !== 'Aston Martin' && piloto.equipo !== 'Alpine' && piloto.equipo !== 'Ferrari' && piloto.equipo !== 'McLaren' && piloto.equipo !== 'Mercedes' && (
+                    <span className={styles.escuderia}>{piloto.equipo ?? '—'}</span>
+                  )}
+                </div>
+                {!fotosFallidas.has(piloto.id) && (
+                  <img
+                    src={rutaFotoPiloto(piloto)}
+                    alt=""
+                    className={styles.fotoRostro}
+                    onError={() => ocultarFoto(piloto.id)}
+                  />
+                )}
+              </div>
+              <span className={styles.itemChevron} aria-hidden>
+                {expandido ? '▲' : '▼'}
               </span>
-              <span className={styles.dato}>
-                {datoPeso(piloto)}
-              </span>
-              {piloto.equipo !== 'Red Bull' && piloto.equipo !== 'Aston Martin' && piloto.equipo !== 'Alpine' && piloto.equipo !== 'Ferrari' && piloto.equipo !== 'McLaren' && piloto.equipo !== 'Mercedes' && (
-                <span className={styles.escuderia}>{piloto.equipo ?? '—'}</span>
+              {!esMovil && (
+                <div className={styles.itemContenidoDer}>
+                  <span className={styles.dato}>
+                    <span className={styles.datoLabel}>Nº</span>{' '}
+                    {datoNumero(piloto)}
+                  </span>
+                  <span className={styles.dato}>
+                    {datoPeso(piloto)}
+                  </span>
+                  <span className={styles.dato}>
+                    <span className={styles.datoLabel}>Carreras</span>{' '}
+                    {carrerasPorPiloto.get(piloto.id) ?? 0}
+                  </span>
+                  <span className={styles.dato}>
+                    <span className={styles.datoLabel}>Mejor Puesto</span>{' '}
+                    {mejorPuestoPorPilotoMap.has(piloto.id)
+                      ? mejorPuestoPorPilotoMap.get(piloto.id)
+                      : '—'}
+                  </span>
+                  <span className={styles.dato}>
+                    <span className={styles.datoLabel}>Elo</span>{' '}
+                    900
+                  </span>
+                </div>
               )}
-            </span>
             </div>
+            </div>
+            {esMovil && (
+              <div className={styles.itemContenidoExpandido} aria-hidden={!expandido}>
+                <span className={styles.dato}>
+                  <span className={styles.datoLabel}>Nº</span>{' '}
+                  {datoNumero(piloto)}
+                </span>
+                <span className={styles.dato}>
+                  {datoPeso(piloto)}
+                </span>
+                <span className={styles.dato}>
+                  <span className={styles.datoLabel}>Carreras</span>{' '}
+                  {carrerasPorPiloto.get(piloto.id) ?? 0}
+                </span>
+                <span className={styles.dato}>
+                  <span className={styles.datoLabel}>Mejor Puesto</span>{' '}
+                  {mejorPuestoPorPilotoMap.has(piloto.id)
+                    ? mejorPuestoPorPilotoMap.get(piloto.id)
+                    : '—'}
+                </span>
+                <span className={styles.dato}>
+                  <span className={styles.datoLabel}>Elo</span>{' '}
+                  900
+                </span>
+              </div>
+            )}
           </li>
-        ))}
+          )
+        })}
       </ul>
       )}
     </section>
