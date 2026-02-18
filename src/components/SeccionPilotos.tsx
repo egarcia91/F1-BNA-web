@@ -23,6 +23,14 @@ function nombreCompleto(p: Corredor) {
   return [p.nombre, p.apellido].filter(Boolean).join(' ')
 }
 
+/** URL base para assets en public: en producción apunta a la carpeta public de la rama main */
+function publicAsset(path: string): string {
+  const p = path.startsWith('/') ? path : `/${path}`
+  return typeof __PUBLIC_ASSETS_BASE__ !== 'undefined' && __PUBLIC_ASSETS_BASE__
+    ? __PUBLIC_ASSETS_BASE__ + p
+    : p
+}
+
 /** Ruta a la foto del piloto en public. Si tiene `foto` se usa; si no, pilotos/{nombre-apellido}.jpg */
 function rutaFotoPiloto(p: Corredor): string {
   if (p.foto) return p.foto.startsWith('/') ? p.foto : `/${p.foto}`
@@ -173,42 +181,42 @@ export function SeccionPilotos() {
             <div className={styles.logoWrap}>
               {piloto.equipo === 'Red Bull' && (
                 <img
-                  src="/redbull.png"
+                  src={publicAsset('/redbull.png')}
                   alt=""
                   className={styles.logoEscuderia}
                 />
               )}
               {piloto.equipo === 'Aston Martin' && (
                 <img
-                  src="/astonmartin.png"
+                  src={publicAsset('/astonmartin.png')}
                   alt=""
                   className={styles.logoEscuderia}
                 />
               )}
               {piloto.equipo === 'Alpine' && (
                 <img
-                  src="/alpine.png"
+                  src={publicAsset('/alpine.png')}
                   alt=""
                   className={styles.logoEscuderia}
                 />
               )}
               {piloto.equipo === 'Ferrari' && (
                 <img
-                  src="/ferrari.png"
+                  src={publicAsset('/ferrari.png')}
                   alt=""
                   className={styles.logoEscuderia}
                 />
               )}
               {piloto.equipo === 'McLaren' && (
                 <img
-                  src="/mclaren.png"
+                  src={publicAsset('/mclaren.png')}
                   alt=""
                   className={styles.logoEscuderia}
                 />
               )}
               {piloto.equipo === 'Mercedes' && (
                 <img
-                  src="/mercedesbenz.png"
+                  src={publicAsset('/mercedesbenz.png')}
                   alt=""
                   className={styles.logoEscuderia}
                 />
@@ -224,7 +232,7 @@ export function SeccionPilotos() {
                 </div>
                 {!fotosFallidas.has(piloto.id) && (
                   <img
-                    src={rutaFotoPiloto(piloto)}
+                    src={publicAsset(rutaFotoPiloto(piloto))}
                     alt=""
                     className={styles.fotoRostro}
                     onError={() => ocultarFoto(piloto.id)}
