@@ -25,6 +25,10 @@ yarn-error.log*
 .env*.local
 .env
 
+# Firebase service account key (nunca subir a Git)
+firebase-service-account.json
+**/firebase-service-account*.json
+
 # vercel
 .vercel
 

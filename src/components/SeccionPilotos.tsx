@@ -1,7 +1,6 @@
 import { useMemo, useState, useEffect } from 'react'
-import type { Corredor } from '../types'
-import { pilotos } from '../data/pilotos'
-import { torneos } from '../data/torneos'
+import type { Corredor, Torneo } from '../types'
+import { useData } from '../context/DataContext'
 import styles from './SeccionPilotos.module.css'
 
 const MEDIA_MOBILE = '(max-width: 768px)'
@@ -59,7 +58,7 @@ function datoPeso(p: Corredor) {
 }
 
 /** Cuenta de carreras en las que participó cada piloto (por id) en todos los torneos */
-function contarCarrerasPorPiloto(): Map<string, number> {
+function contarCarrerasPorPiloto(torneos: Torneo[]): Map<string, number> {
   const map = new Map<string, number>()
   for (const torneo of torneos) {
     for (const carrera of torneo.carreras) {
@@ -73,7 +72,7 @@ function contarCarrerasPorPiloto(): Map<string, number> {
 }
 
 /** Mejor puesto (posición más baja = mejor) por piloto en todas las carreras; sin carrera = sin dato */
-function mejorPuestoPorPiloto(): Map<string, number> {
+function mejorPuestoPorPiloto(torneos: Torneo[]): Map<string, number> {
   const map = new Map<string, number>()
   for (const torneo of torneos) {
     for (const carrera of torneo.carreras) {
@@ -97,7 +96,7 @@ function deltaEloPorPosicion(pos: number): number {
 }
 
 /** Elo actual por piloto: base 900 + suma de deltas de cada carrera en la que participó */
-function eloPorPiloto(): Map<string, number> {
+function eloPorPiloto(torneos: Torneo[]): Map<string, number> {
   const map = new Map<string, number>()
   for (const torneo of torneos) {
     for (const carrera of torneo.carreras) {
@@ -113,14 +112,15 @@ function eloPorPiloto(): Map<string, number> {
 }
 
 export function SeccionPilotos() {
+  const { pilotos, torneos } = useData()
   const [visible, setVisible] = useState(false)
   const [fotosFallidas, setFotosFallidas] = useState<Set<string>>(new Set())
   const [expandidoId, setExpandidoId] = useState<string | null>(null)
   const esMovil = useEsMovil()
 
-  const carrerasPorPiloto = useMemo(contarCarrerasPorPiloto, [])
-  const mejorPuestoPorPilotoMap = useMemo(mejorPuestoPorPiloto, [])
-  const eloPorPilotoMap = useMemo(eloPorPiloto, [])
+  const carrerasPorPiloto = useMemo(() => contarCarrerasPorPiloto(torneos), [torneos])
+  const mejorPuestoPorPilotoMap = useMemo(() => mejorPuestoPorPiloto(torneos), [torneos])
+  const eloPorPilotoMap = useMemo(() => eloPorPiloto(torneos), [torneos])
 
   const toggleExpandir = (id: string) => {
     setExpandidoId((prev) => (prev === id ? null : id))

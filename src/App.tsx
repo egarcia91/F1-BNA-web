@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import type { Carrera, Torneo } from './types'
-import { torneos } from './data/torneos'
 import { useAuth } from './context/AuthContext'
+import { useData } from './context/DataContext'
 import { ListaTorneos } from './components/ListaTorneos'
 import { ListaCarreras } from './components/ListaCarreras'
 import { DetalleTorneo } from './components/DetalleTorneo'
@@ -11,6 +11,7 @@ import { LoginScreen } from './components/LoginScreen'
 
 function App() {
   const { user, isLoading, logout } = useAuth()
+  const { torneos, loading: dataLoading, error: dataError } = useData()
   const [torneoSeleccionado, setTorneoSeleccionado] = useState<Torneo | null>(
     null
   )
@@ -42,6 +43,22 @@ function App() {
 
   if (!user) {
     return <LoginScreen />
+  }
+
+  if (dataLoading) {
+    return (
+      <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--f1-text-muted)' }}>
+        Cargando datos…
+      </div>
+    )
+  }
+
+  if (dataError) {
+    return (
+      <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--f1-red)' }}>
+        {dataError}
+      </div>
+    )
   }
 
   return (
