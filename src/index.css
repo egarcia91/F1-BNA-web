@@ -40,6 +40,30 @@ body {
   margin: 0;
 }
 
+.headerUsuario {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+  font-size: 0.875rem;
+  color: var(--f1-text-muted);
+}
+
+.headerCerrarSesion {
+  padding: 0.2rem 0.5rem;
+  font-size: 0.75rem;
+  color: var(--f1-text-muted);
+  background: transparent;
+  border: 1px solid var(--f1-gray-border);
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.headerCerrarSesion:hover {
+  color: #fff;
+  border-color: var(--f1-text-muted);
+}
+
 .cartelProximaCarrera {
   flex-shrink: 0;
   padding: 0.35rem 0.75rem;

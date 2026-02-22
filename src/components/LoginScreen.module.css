@@ -1,0 +1,103 @@
+.wrapper {
+  min-height: 70vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.card {
+  width: 100%;
+  max-width: 380px;
+  padding: 2rem;
+  background: var(--f1-gray);
+  border: 1px solid var(--f1-gray-border);
+  border-radius: 12px;
+  text-align: center;
+}
+
+.titulo {
+  margin: 0 0 0.5rem;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.titulo::after {
+  display: none;
+}
+
+.subtitulo {
+  margin: 0 0 1rem;
+  font-size: 0.95rem;
+  color: var(--f1-text-muted);
+  line-height: 1.5;
+}
+
+.avisoConfig {
+  margin: 0 0 1rem;
+  padding: 0.75rem;
+  font-size: 0.8rem;
+  color: var(--f1-text-muted);
+  background: rgba(225, 6, 0, 0.1);
+  border: 1px solid var(--f1-red-dim);
+  border-radius: 6px;
+  text-align: left;
+}
+
+.avisoConfig code {
+  font-size: 0.85em;
+  padding: 0.1rem 0.25rem;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+.botonGoogle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.75rem 1.25rem;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #1a1a1a;
+  background: #fff;
+  border: 1px solid #dadce0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+
+.botonGoogle:hover {
+  background: #f8f9fa;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.botonInvitado {
+  display: block;
+  width: 100%;
+  margin-top: 1rem;
+  padding: 0.5rem;
+  font-size: 0.9rem;
+  color: var(--f1-text-muted);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.botonInvitado:hover {
+  color: #e8e8e8;
+}
+
+.botonGoogle:focus-visible {
+  outline: 2px solid var(--f1-red);
+  outline-offset: 2px;
+}
+
+.iconoGoogle {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
