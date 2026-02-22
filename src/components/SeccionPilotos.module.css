@@ -165,15 +165,44 @@
     display: flex;
   }
   .itemChevron {
-    display: inline-block;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     margin-left: auto;
-    font-size: 0.75rem;
-    color: var(--f1-text-muted);
+    flex-shrink: 0;
+    width: 2rem;
+    height: 2rem;
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.85);
+    background: rgba(0, 0, 0, 0.25);
+    border-radius: 50%;
+  }
+  .itemChevron:hover {
+    color: #fff;
+    background: rgba(0, 0, 0, 0.4);
+  }
+  /* Fondos claros: flecha oscura para contraste */
+  .itemMcLaren .itemChevron,
+  .itemMercedes .itemChevron,
+  .itemAlpine .itemChevron,
+  .itemFerrari .itemChevron {
+    color: #1a1a1a;
+    background: rgba(255, 255, 255, 0.9);
+  }
+  .itemMcLaren .itemChevron:hover,
+  .itemMercedes .itemChevron:hover,
+  .itemAlpine .itemChevron:hover,
+  .itemFerrari .itemChevron:hover {
+    color: #000;
+    background: #fff;
   }
 }
 
-.itemChevron {
-  display: none;
+/* Solo escritorio: ocultar flecha (en móvil se muestra dentro del media query de arriba) */
+@media (min-width: 769px) {
+  .itemChevron {
+    display: none;
+  }
 }
 
 .itemAlpine .itemContenido .nombre,
@@ -297,18 +326,6 @@
 
 .itemRedBull .datoFraseValor {
   color: var(--f1-red);
-}
-
-.badgeRegistrado {
-  display: inline-block;
-  margin-left: 0.5rem;
-  padding: 0.15rem 0.5rem;
-  font-size: 0.7rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  color: var(--f1-red);
-  border: 1px solid var(--f1-red);
-  border-radius: 4px;
 }
 
 .escuderia {

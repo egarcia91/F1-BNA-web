@@ -118,6 +118,15 @@ export function SeccionPilotos() {
   const [expandidoId, setExpandidoId] = useState<string | null>(null)
   const esMovil = useEsMovil()
 
+  const pilotosOrdenados = useMemo(() => {
+    return [...pilotos].sort((a, b) => {
+      const equipoA = (a.equipo ?? '').toLowerCase()
+      const equipoB = (b.equipo ?? '').toLowerCase()
+      if (equipoA !== equipoB) return equipoA.localeCompare(equipoB)
+      return nombreCompleto(a).localeCompare(nombreCompleto(b), undefined, { sensitivity: 'base' })
+    })
+  }, [pilotos])
+
   const carrerasPorPiloto = useMemo(() => contarCarrerasPorPiloto(torneos), [torneos])
   const mejorPuestoPorPilotoMap = useMemo(() => mejorPuestoPorPiloto(torneos), [torneos])
   const eloPorPilotoMap = useMemo(() => eloPorPiloto(torneos), [torneos])
@@ -146,7 +155,7 @@ export function SeccionPilotos() {
       </button>
       {visible && (
       <ul id="seccion-pilotos-lista" className={styles.lista}>
-        {pilotos.map((piloto) => {
+        {pilotosOrdenados.map((piloto) => {
           const itemClases =
             piloto.equipo === 'Red Bull'
               ? `${styles.item} ${styles.itemRedBull}`
@@ -226,9 +235,6 @@ export function SeccionPilotos() {
               <div className={styles.itemContenidoNombreYFoto}>
                 <div className={styles.itemContenidoIzq}>
                   <span className={styles.nombre}>{nombreCompleto(piloto)}</span>
-                  {piloto.registrado && (
-                    <span className={styles.badgeRegistrado} title="Cuenta vinculada">Registrado</span>
-                  )}
                   {piloto.equipo !== 'Red Bull' && piloto.equipo !== 'Aston Martin' && piloto.equipo !== 'Alpine' && piloto.equipo !== 'Ferrari' && piloto.equipo !== 'McLaren' && piloto.equipo !== 'Mercedes' && (
                     <span className={styles.escuderia}>{piloto.equipo ?? '—'}</span>
                   )}
@@ -268,6 +274,10 @@ export function SeccionPilotos() {
                     <span className={styles.datoLabel}>Elo</span>{' '}
                     {eloPorPilotoMap.get(piloto.id) ?? ELO_BASE}
                   </span>
+                  <span className={styles.dato}>
+                    <span className={styles.datoLabel}>Registrado</span>{' '}
+                    <span aria-hidden>{piloto.registrado ? '✓' : '✗'}</span>
+                  </span>
                   {piloto.frase && (
                     <span className={styles.datoFrase}>
                       <span className={styles.datoLabel}>Frase</span>{' '}
@@ -300,6 +310,10 @@ export function SeccionPilotos() {
                 <span className={styles.dato}>
                   <span className={styles.datoLabel}>Elo</span>{' '}
                   {eloPorPilotoMap.get(piloto.id) ?? ELO_BASE}
+                </span>
+                <span className={styles.dato}>
+                  <span className={styles.datoLabel}>Registrado</span>{' '}
+                  <span aria-hidden>{piloto.registrado ? '✓' : '✗'}</span>
                 </span>
                 {piloto.frase && (
                   <span className={styles.datoFrase}>

@@ -116,6 +116,66 @@
   border-color: var(--f1-text-muted);
 }
 
+.botonFormarParte {
+  margin-top: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  border: 1px solid var(--f1-red);
+  background: transparent;
+  color: var(--f1-red);
+  font: inherit;
+  cursor: pointer;
+  display: block;
+  width: 100%;
+  max-width: 280px;
+}
+
+.botonFormarParte:hover:not(:disabled) {
+  background: var(--f1-red);
+  color: #fff;
+}
+
+.botonFormarParte:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.formNuevoPiloto {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin: 1rem 0;
+}
+
+.labelForm {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.875rem;
+  color: var(--f1-text-muted);
+}
+
+.inputForm {
+  padding: 0.5rem 0.75rem;
+  font: inherit;
+  color: #fff;
+  background: #252525;
+  border: 1px solid var(--f1-gray-border);
+  border-radius: 6px;
+}
+
+.inputForm::placeholder {
+  color: var(--f1-text-muted);
+  opacity: 0.8;
+}
+
+.filaBotones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
 .error {
   margin: 0 0 0.5rem;
   color: var(--f1-red);

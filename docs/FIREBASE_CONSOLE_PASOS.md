@@ -51,7 +51,8 @@ Seguí estos pasos una sola vez. Después solo vas a usar la app con los datos e
      match /databases/{database}/documents {
        match /pilotos/{id} {
          allow read: if true;
-         allow create: if false;
+         allow create: if request.auth != null
+           && request.resource.data.email == request.auth.token.email;
          allow delete: if false;
          allow update: if request.auth != null
            && (resource.data.email == request.auth.token.email
@@ -69,7 +70,7 @@ Seguí estos pasos una sola vez. Después solo vas a usar la app con los datos e
    }
    ```
 
-   No se permite crear ni borrar documentos.
+   **create**: solo si el usuario está autenticado y el nuevo documento tiene su email (para &quot;Quiero formar parte&quot;). **delete**: no permitido.
 
 3. **"Publicar"**.
 

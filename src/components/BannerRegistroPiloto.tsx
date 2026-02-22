@@ -4,7 +4,7 @@ import type { Corredor } from '../types'
 import { useAuth } from '../context/AuthContext'
 import { useData } from '../context/DataContext'
 import { getAuthLazy } from '../lib/firebase'
-import { registrarPiloto } from '../lib/registrarPiloto'
+import { registrarPiloto, crearPiloto } from '../lib/registrarPiloto'
 import styles from './BannerRegistroPiloto.module.css'
 
 function nombreCompleto(p: Corredor) {
@@ -42,6 +42,9 @@ export function BannerRegistroPiloto() {
   const [error, setError] = useState<string | null>(null)
   const [mostrarListaRestantes, setMostrarListaRestantes] = useState(false)
   const [busqueda, setBusqueda] = useState('')
+  const [mostrarFormularioNuevo, setMostrarFormularioNuevo] = useState(false)
+  const [creando, setCreando] = useState(false)
+  const [formNuevo, setFormNuevo] = useState({ nombre: '', apellido: '', numero: '', peso: '', frase: '' })
 
   const candidatos = useMemo(() => {
     if (!user?.email || !user?.name) return []
@@ -57,6 +60,49 @@ export function BannerRegistroPiloto() {
     const q = normalizarNombre(busqueda)
     return restantes.filter((p) => normalizarNombre(nombreCompleto(p)).includes(q))
   }, [restantes, busqueda])
+
+  const handleCrearPiloto = async () => {
+    const nombre = formNuevo.nombre.trim()
+    const apellido = formNuevo.apellido.trim()
+    if (!nombre || !apellido) {
+      setError('Nombre y apellido son obligatorios.')
+      return
+    }
+    if (!user?.email) return
+    setError(null)
+    setCreando(true)
+    try {
+      const firebaseAuth = getAuthLazy()
+      if (!firebaseAuth) {
+        setError('Firebase no está configurado.')
+        return
+      }
+      await signInWithPopup(firebaseAuth, new GoogleAuthProvider())
+      await crearPiloto(
+        {
+          nombre,
+          apellido,
+          numero: formNuevo.numero === '' ? undefined : Number(formNuevo.numero),
+          peso: formNuevo.peso === '' ? undefined : Number(formNuevo.peso),
+          frase: formNuevo.frase.trim() || undefined,
+        },
+        user.email
+      )
+      await refetchPilotos()
+      setMostrarFormularioNuevo(false)
+      setMostrarListaRestantes(false)
+      setFormNuevo({ nombre: '', apellido: '', numero: '', peso: '', frase: '' })
+    } catch (e: unknown) {
+      const err = e && typeof e === 'object' ? e as { code?: string; message?: string } : {}
+      const isConfigNotFound = err.code === 'auth/configuration-not-found' || (err.message && String(err.message).includes('CONFIGURATION_NOT_FOUND'))
+      const msg = isConfigNotFound
+        ? 'Para darte de alta hay que habilitar Authentication (Google) en Firebase Console.'
+        : e instanceof Error ? e.message : 'No se pudo crear el piloto'
+      setError(msg)
+    } finally {
+      setCreando(false)
+    }
+  }
 
   const handleRegistrar = async (pilotoId: string) => {
     if (!user?.email) return
@@ -86,6 +132,78 @@ export function BannerRegistroPiloto() {
   if (candidatos.length === 0 && !mostrarListaRestantes) return null
   if (restantes.length === 0 && !candidatos.length) return null
 
+  if (mostrarFormularioNuevo) {
+    return (
+      <div className={styles.banner} role="region" aria-label="Formulario nuevo piloto">
+        {error && <p className={styles.error}>{error}</p>}
+        <p className={styles.texto}>Completá tus datos para formar parte de Karting BNA. El equipo queda en &quot;a definir&quot;.</p>
+        <div className={styles.formNuevoPiloto}>
+          <label className={styles.labelForm}>
+            Nombre *
+            <input
+              type="text"
+              value={formNuevo.nombre}
+              onChange={(e) => setFormNuevo((f) => ({ ...f, nombre: e.target.value }))}
+              className={styles.inputForm}
+              placeholder="Tu nombre"
+            />
+          </label>
+          <label className={styles.labelForm}>
+            Apellido *
+            <input
+              type="text"
+              value={formNuevo.apellido}
+              onChange={(e) => setFormNuevo((f) => ({ ...f, apellido: e.target.value }))}
+              className={styles.inputForm}
+              placeholder="Tu apellido"
+            />
+          </label>
+          <label className={styles.labelForm}>
+            Número
+            <input
+              type="number"
+              min={0}
+              value={formNuevo.numero}
+              onChange={(e) => setFormNuevo((f) => ({ ...f, numero: e.target.value }))}
+              className={styles.inputForm}
+              placeholder="—"
+            />
+          </label>
+          <label className={styles.labelForm}>
+            Peso (kg)
+            <input
+              type="number"
+              min={0}
+              step={0.1}
+              value={formNuevo.peso}
+              onChange={(e) => setFormNuevo((f) => ({ ...f, peso: e.target.value }))}
+              className={styles.inputForm}
+              placeholder="—"
+            />
+          </label>
+          <label className={styles.labelForm}>
+            Frase (opcional)
+            <input
+              type="text"
+              value={formNuevo.frase}
+              onChange={(e) => setFormNuevo((f) => ({ ...f, frase: e.target.value }))}
+              className={styles.inputForm}
+              placeholder="Tu frase"
+            />
+          </label>
+        </div>
+        <div className={styles.filaBotones}>
+          <button type="button" className={styles.boton} onClick={handleCrearPiloto} disabled={creando}>
+            {creando ? 'Creando…' : 'Crear mi perfil'}
+          </button>
+          <button type="button" className={styles.botonVolver} onClick={() => { setMostrarFormularioNuevo(false); setError(null) }}>
+            Volver
+          </button>
+        </div>
+      </div>
+    )
+  }
+
   if (mostrarListaRestantes) {
     return (
       <div className={styles.banner} role="region" aria-label="Elegir piloto para vincular">
@@ -114,6 +232,14 @@ export function BannerRegistroPiloto() {
           ))}
         </ul>
         {restantesFiltrados.length === 0 && <p className={styles.sinResultados}>No hay pilotos que coincidan con la búsqueda.</p>}
+        <button
+          type="button"
+          className={styles.botonFormarParte}
+          onClick={() => setMostrarFormularioNuevo(true)}
+          disabled={registrandoId !== null}
+        >
+          Quiero formar parte de Karting BNA
+        </button>
         <button type="button" onClick={() => { setMostrarListaRestantes(false); setBusqueda('') }} className={styles.botonVolver}>
           Volver
         </button>
