@@ -7,6 +7,7 @@ import { ListaCarreras } from './components/ListaCarreras'
 import { DetalleTorneo } from './components/DetalleTorneo'
 import { ListaResultadosTorneo } from './components/ListaResultadosTorneo'
 import { SeccionPilotos } from './components/SeccionPilotos'
+import { BannerRegistroPiloto } from './components/BannerRegistroPiloto'
 import { LoginScreen } from './components/LoginScreen'
 
 function App() {
@@ -82,6 +83,7 @@ function App() {
           Faltan {diasHastaCarrera} días
         </span>
       </header>
+      <BannerRegistroPiloto />
       <SeccionPilotos />
       <ListaTorneos
         torneos={torneos}

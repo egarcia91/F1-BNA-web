@@ -43,7 +43,7 @@ Seguí estos pasos una sola vez. Después solo vas a usar la app con los datos e
 ## 4. Reglas de seguridad (recomendado después de cargar datos)
 
 1. En Firestore, pestaña **"Reglas"**.
-2. Dejá en modo prueba o pegá reglas de solo lectura:
+2. Dejá en modo prueba o pegá reglas como las siguientes. Para **pilotos** se permite que un usuario autenticado (Google) actualice un documento **solo** para marcarse como registrado con su propio email:
 
    ```
    rules_version = '2';
@@ -51,7 +51,10 @@ Seguí estos pasos una sola vez. Después solo vas a usar la app con los datos e
      match /databases/{database}/documents {
        match /pilotos/{id} {
          allow read: if true;
-         allow write: if false;
+         allow create: if false;
+         allow delete: if false;
+         allow update: if request.auth != null
+           && request.resource.data.email == request.auth.token.email;
        }
        match /torneos/{torneoId} {
          allow read: if true;
@@ -65,9 +68,19 @@ Seguí estos pasos una sola vez. Después solo vas a usar la app con los datos e
    }
    ```
 
+   Así el usuario solo puede escribir su propio `email` en un piloto (y `registrado: true`); no puede crear ni borrar documentos ni cambiar otros campos de forma arbitraria.
+
 3. **"Publicar"**.
 
-## 5. Configurar el `.env` en tu repo
+## 5. Habilitar inicio de sesión con Google (para vincular pilotos)
+
+Para que los usuarios puedan iniciar sesión con Google y vincular su cuenta a un piloto:
+
+1. En Firebase Console: **Compilación** → **Authentication**.
+2. Pestaña **"Sign-in method"**.
+3. Click en **Google** → activar y guardar (podés dejar el correo de apoyo en blanco si querés).
+
+## 6. Configurar el `.env` en tu repo
 
 En la raíz del proyecto, en el archivo `.env`, agregá (reemplazando con los valores que te dio Firebase):
 
@@ -87,7 +100,7 @@ VITE_FIREBASE_APP_ID=...
 - **apiKey**, **authDomain**, **projectId**, **storageBucket**, **messagingSenderId**, **appId** son los del paso 2.
 - No subas el `.env` a Git (ya está en `.gitignore`).
 
-## 6. Cargar los datos iniciales (script de seed)
+## 7. Cargar los datos iniciales (script de seed)
 
 Para subir los datos actuales del repo (`src/data/pilotos.ts` y `src/data/torneos.ts`) a Firestore:
 
@@ -119,4 +132,4 @@ Después de ejecutarlo, recargá la app (con el `.env` de Firebase ya configurad
 
 ---
 
-**Resumen**: Crear proyecto → Registrar app web → Copiar config al `.env` → Activar Firestore → (Opcional) Reglas → Cuenta de servicio → `npm run seed:firestore`.
+**Resumen**: Crear proyecto → Registrar app web → Copiar config al `.env` → Activar Firestore → (Opcional) Reglas → Habilitar Google en Authentication → Cuenta de servicio → `npm run seed:firestore`.

@@ -299,6 +299,18 @@
   color: var(--f1-red);
 }
 
+.badgeRegistrado {
+  display: inline-block;
+  margin-left: 0.5rem;
+  padding: 0.15rem 0.5rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--f1-red);
+  border: 1px solid var(--f1-red);
+  border-radius: 4px;
+}
+
 .escuderia {
   color: var(--f1-red);
   font-weight: 600;

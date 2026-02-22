@@ -8,12 +8,13 @@ interface DataContextValue {
   torneos: Torneo[]
   loading: boolean
   error: string | null
+  refetchPilotos: () => void
 }
 
 const DataContext = createContext<DataContextValue | null>(null)
 
 export function DataProvider({ children }: { children: ReactNode }) {
-  const { pilotos, loading: loadingP, error: errorP } = usePilotos()
+  const { pilotos, loading: loadingP, error: errorP, refetch: refetchPilotos } = usePilotos()
   const { torneos, loading: loadingT, error: errorT } = useTorneos()
 
   const loading = loadingP || loadingT
@@ -24,6 +25,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     torneos,
     loading,
     error,
+    refetchPilotos,
   }
 
   return (

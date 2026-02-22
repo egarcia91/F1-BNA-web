@@ -12,6 +12,10 @@ export interface Corredor {
   frase?: string
   equipo?: string
   puntos?: number
+  /** true si un usuario vinculó su cuenta de Google con este piloto */
+  registrado?: boolean
+  /** Email del usuario de Google vinculado (solo si registrado es true) */
+  email?: string
   datos?: Record<string, unknown>
 }
 

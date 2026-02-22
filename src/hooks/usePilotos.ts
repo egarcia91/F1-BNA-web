@@ -8,10 +8,12 @@ export function usePilotos(): {
   pilotos: Corredor[]
   loading: boolean
   error: string | null
+  refetch: () => void
 } {
   const [pilotos, setPilotos] = useState<Corredor[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [refetchTrigger, setRefetchTrigger] = useState(0)
 
   useEffect(() => {
     if (!db) {
@@ -38,6 +40,8 @@ export function usePilotos(): {
             foto: typeof d.foto === 'string' ? d.foto : undefined,
             frase: typeof d.frase === 'string' ? d.frase : undefined,
             puntos: typeof d.puntos === 'number' ? d.puntos : undefined,
+            registrado: d.registrado === true,
+            email: typeof d.email === 'string' ? d.email : undefined,
             datos: d.datos && typeof d.datos === 'object' ? (d.datos as Record<string, unknown>) : undefined,
           })
         })
@@ -56,7 +60,9 @@ export function usePilotos(): {
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [refetchTrigger])
 
-  return { pilotos, loading, error }
+  const refetch = () => setRefetchTrigger((t) => t + 1)
+
+  return { pilotos, loading, error, refetch }
 }

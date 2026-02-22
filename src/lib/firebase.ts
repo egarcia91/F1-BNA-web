@@ -1,4 +1,5 @@
 import { initializeApp } from 'firebase/app'
+import { getAuth } from 'firebase/auth'
 import { getFirestore } from 'firebase/firestore'
 
 const firebaseConfig = {
@@ -15,16 +16,28 @@ function hasValidConfig(): boolean {
   return typeof id === 'string' && id.trim() !== ''
 }
 
+let app: ReturnType<typeof initializeApp> | null = null
 let db: ReturnType<typeof getFirestore> | null = null
+let auth: ReturnType<typeof getAuth> | null = null
 
 if (hasValidConfig()) {
   try {
-    initializeApp(firebaseConfig)
-    db = getFirestore()
+    app = initializeApp(firebaseConfig)
+    db = getFirestore(app)
+    // Auth no se inicializa al cargar para evitar 400 CONFIGURATION_NOT_FOUND
+    // si Authentication no está habilitado en la consola. Se obtiene con getAuthLazy().
   } catch {
+    app = null
     db = null
   }
 }
 
-export { db }
+/** Inicializa Auth bajo demanda (p. ej. al hacer "Sí, soy yo"). Puede fallar si Authentication no está configurado. */
+export function getAuthLazy(): ReturnType<typeof getAuth> | null {
+  if (!app) return null
+  if (!auth) auth = getAuth(app)
+  return auth
+}
+
+export { db, auth }
 export const isFirebaseEnabled = (): boolean => db != null

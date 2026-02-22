@@ -15,8 +15,8 @@ function IconoGoogle() {
   )
 }
 
-/** Solo se monta cuando hay clientId (y por tanto GoogleOAuthProvider); así el hook no falla. */
-function BotonGoogleLogin() {
+/** Login con Google vía OAuth (no usa Firebase Auth, así evita CONFIGURATION_NOT_FOUND si Auth no está habilitado). */
+function BotonGoogleLoginOAuth() {
   const { login } = useAuth()
   const googleLogin = useGoogleLogin({
     onSuccess: (tokenResponse) => {
@@ -66,7 +66,7 @@ export function LoginScreen() {
             Configurá <code>VITE_GOOGLE_CLIENT_ID</code> en un archivo <code>.env</code> en la raíz del proyecto (copiá <code>.env.example</code> y pegá tu Client ID). Reiniciá <code>npm run dev</code> después.
           </p>
         )}
-        {clientId ? <BotonGoogleLogin /> : (
+        {clientId ? <BotonGoogleLoginOAuth /> : (
           <button type="button" className={styles.botonGoogle} disabled>
             <IconoGoogle />
             Continuar con Google

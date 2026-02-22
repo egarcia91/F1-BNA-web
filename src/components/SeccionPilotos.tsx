@@ -226,6 +226,9 @@ export function SeccionPilotos() {
               <div className={styles.itemContenidoNombreYFoto}>
                 <div className={styles.itemContenidoIzq}>
                   <span className={styles.nombre}>{nombreCompleto(piloto)}</span>
+                  {piloto.registrado && (
+                    <span className={styles.badgeRegistrado} title="Cuenta vinculada">Registrado</span>
+                  )}
                   {piloto.equipo !== 'Red Bull' && piloto.equipo !== 'Aston Martin' && piloto.equipo !== 'Alpine' && piloto.equipo !== 'Ferrari' && piloto.equipo !== 'McLaren' && piloto.equipo !== 'Mercedes' && (
                     <span className={styles.escuderia}>{piloto.equipo ?? '—'}</span>
                   )}
