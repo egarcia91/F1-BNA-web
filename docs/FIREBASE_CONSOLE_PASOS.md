@@ -43,7 +43,7 @@ Seguí estos pasos una sola vez. Después solo vas a usar la app con los datos e
 ## 4. Reglas de seguridad (recomendado después de cargar datos)
 
 1. En Firestore, pestaña **"Reglas"**.
-2. Dejá en modo prueba o pegá reglas como las siguientes. Para **pilotos** se permite que un usuario autenticado (Google) actualice un documento **solo** para marcarse como registrado con su propio email:
+2. Dejá en modo prueba o pegá reglas como las siguientes. Para **pilotos** un usuario autenticado (Google) puede vincularse (poner su email), editar su piloto (frase, número, peso) o desvincularse (registrado: false, quitar email). La condición permite actualizar si el documento actual tiene su email o si el nuevo documento tendría su email:
 
    ```
    rules_version = '2';
@@ -54,7 +54,8 @@ Seguí estos pasos una sola vez. Después solo vas a usar la app con los datos e
          allow create: if false;
          allow delete: if false;
          allow update: if request.auth != null
-           && request.resource.data.email == request.auth.token.email;
+           && (resource.data.email == request.auth.token.email
+               || request.resource.data.email == request.auth.token.email);
        }
        match /torneos/{torneoId} {
          allow read: if true;
@@ -68,7 +69,7 @@ Seguí estos pasos una sola vez. Después solo vas a usar la app con los datos e
    }
    ```
 
-   Así el usuario solo puede escribir su propio `email` en un piloto (y `registrado: true`); no puede crear ni borrar documentos ni cambiar otros campos de forma arbitraria.
+   No se permite crear ni borrar documentos.
 
 3. **"Publicar"**.
 

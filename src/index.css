@@ -49,6 +49,21 @@ body {
   color: var(--f1-text-muted);
 }
 
+.headerBotonDatos {
+  padding: 0.2rem 0.5rem;
+  font-size: 0.75rem;
+  color: var(--f1-red);
+  background: transparent;
+  border: 1px solid var(--f1-red);
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.headerBotonDatos:hover {
+  color: #fff;
+  background: var(--f1-red);
+}
+
 .headerCerrarSesion {
   padding: 0.2rem 0.5rem;
   font-size: 0.75rem;

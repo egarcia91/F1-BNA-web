@@ -30,11 +30,18 @@ function candidatosPorNombre(pilotos: Corredor[], nombreUsuario: string): Corred
   })
 }
 
+/** Pilotos que aún no tienen cuenta vinculada. */
+function pilotosNoVinculados(pilotos: Corredor[]): Corredor[] {
+  return pilotos.filter((p) => !p.email)
+}
+
 export function BannerRegistroPiloto() {
   const { user } = useAuth()
   const { pilotos, refetchPilotos } = useData()
   const [registrandoId, setRegistrandoId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [mostrarListaRestantes, setMostrarListaRestantes] = useState(false)
+  const [busqueda, setBusqueda] = useState('')
 
   const candidatos = useMemo(() => {
     if (!user?.email || !user?.name) return []
@@ -42,6 +49,14 @@ export function BannerRegistroPiloto() {
     if (yaRegistrado) return []
     return candidatosPorNombre(pilotos, user.name)
   }, [user?.email, user?.name, pilotos])
+
+  const restantes = useMemo(() => pilotosNoVinculados(pilotos), [pilotos])
+
+  const restantesFiltrados = useMemo(() => {
+    if (!busqueda.trim()) return restantes
+    const q = normalizarNombre(busqueda)
+    return restantes.filter((p) => normalizarNombre(nombreCompleto(p)).includes(q))
+  }, [restantes, busqueda])
 
   const handleRegistrar = async (pilotoId: string) => {
     if (!user?.email) return
@@ -68,7 +83,43 @@ export function BannerRegistroPiloto() {
     }
   }
 
-  if (candidatos.length === 0) return null
+  if (candidatos.length === 0 && !mostrarListaRestantes) return null
+  if (restantes.length === 0 && !candidatos.length) return null
+
+  if (mostrarListaRestantes) {
+    return (
+      <div className={styles.banner} role="region" aria-label="Elegir piloto para vincular">
+        {error && <p className={styles.error}>{error}</p>}
+        <p className={styles.texto}>¿Cuál de estos sos? Buscá tu nombre en la lista.</p>
+        <input
+          type="search"
+          value={busqueda}
+          onChange={(e) => setBusqueda(e.target.value)}
+          placeholder="Buscar por nombre…"
+          className={styles.inputBusqueda}
+          aria-label="Buscar piloto"
+        />
+        <ul className={styles.listaRestantes}>
+          {restantesFiltrados.map((p) => (
+            <li key={p.id}>
+              <button
+                type="button"
+                className={styles.boton}
+                onClick={() => handleRegistrar(p.id)}
+                disabled={registrandoId !== null}
+              >
+                {registrandoId === p.id ? '…' : nombreCompleto(p)}
+              </button>
+            </li>
+          ))}
+        </ul>
+        {restantesFiltrados.length === 0 && <p className={styles.sinResultados}>No hay pilotos que coincidan con la búsqueda.</p>}
+        <button type="button" onClick={() => { setMostrarListaRestantes(false); setBusqueda('') }} className={styles.botonVolver}>
+          Volver
+        </button>
+      </div>
+    )
+  }
 
   return (
     <div className={styles.banner} role="region" aria-label="Vincular tu perfil con un piloto">
@@ -83,6 +134,14 @@ export function BannerRegistroPiloto() {
             disabled={registrandoId !== null}
           >
             {registrandoId === candidatos[0].id ? '…' : 'Sí, soy yo'}
+          </button>
+          <button
+            type="button"
+            className={styles.botonSecundario}
+            onClick={() => setMostrarListaRestantes(true)}
+            disabled={registrandoId !== null}
+          >
+            No soy yo
           </button>
         </p>
       ) : (
@@ -102,6 +161,14 @@ export function BannerRegistroPiloto() {
               </li>
             ))}
           </ul>
+          <button
+            type="button"
+            className={styles.botonSecundario}
+            onClick={() => setMostrarListaRestantes(true)}
+            disabled={registrandoId !== null}
+          >
+            No soy yo
+          </button>
         </>
       )}
     </div>
