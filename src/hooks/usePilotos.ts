@@ -42,6 +42,7 @@ export function usePilotos(): {
             puntos: typeof d.puntos === 'number' ? d.puntos : undefined,
             registrado: d.registrado === true,
             email: typeof d.email === 'string' ? d.email : undefined,
+            presenteSiguienteCarrera: d.presenteSiguienteCarrera === true,
             datos: d.datos && typeof d.datos === 'object' ? (d.datos as Record<string, unknown>) : undefined,
           })
         })

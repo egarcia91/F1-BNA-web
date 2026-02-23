@@ -22,6 +22,7 @@ export async function crearPiloto(
     equipo: 'a definir',
     registrado: true,
     email,
+    presenteSiguienteCarrera: false,
   }
   if (Object.keys(datosFirestore).length) payload.datos = datosFirestore
   if (datos.frase != null && String(datos.frase).trim()) payload.frase = String(datos.frase).trim()
@@ -55,6 +56,15 @@ export async function actualizarPiloto(
   if (payload.frase !== undefined) update.frase = payload.frase
   if (payload.datos !== undefined) update.datos = payload.datos
   await updateDoc(ref, update)
+}
+
+/**
+ * Actualiza si el piloto va a asistir a la próxima carrera.
+ * Requiere que el usuario esté autenticado y que el piloto tenga su email (vinculado).
+ */
+export async function actualizarPresenteSiguienteCarrera(pilotoId: string, presente: boolean): Promise<void> {
+  if (!db) throw new Error('Firebase no está configurado')
+  await updateDoc(doc(db, 'pilotos', pilotoId), { presenteSiguienteCarrera: presente })
 }
 
 /**

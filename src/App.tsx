@@ -1,7 +1,10 @@
 import { useState } from 'react'
+import { signInWithPopup, GoogleAuthProvider } from 'firebase/auth'
 import type { Carrera, Torneo } from './types'
 import { useAuth } from './context/AuthContext'
 import { useData } from './context/DataContext'
+import { getAuthLazy } from './lib/firebase'
+import { actualizarPresenteSiguienteCarrera } from './lib/registrarPiloto'
 import { ListaTorneos } from './components/ListaTorneos'
 import { ListaCarreras } from './components/ListaCarreras'
 import { DetalleTorneo } from './components/DetalleTorneo'
@@ -11,9 +14,11 @@ import { BannerRegistroPiloto } from './components/BannerRegistroPiloto'
 import { PanelDatosPiloto } from './components/PanelDatosPiloto'
 import { LoginScreen } from './components/LoginScreen'
 
+const NOMBRE_PROXIMA_CARRERA = '"Night Race" el 5 de marzo'
+
 function App() {
   const { user, isLoading, logout } = useAuth()
-  const { pilotos, torneos, loading: dataLoading, error: dataError } = useData()
+  const { pilotos, torneos, loading: dataLoading, error: dataError, refetchPilotos } = useData()
   const [torneoSeleccionado, setTorneoSeleccionado] = useState<Torneo | null>(
     null
   )
@@ -21,8 +26,11 @@ function App() {
     null
   )
   const [panelDatosAbierto, setPanelDatosAbierto] = useState(false)
+  const [confirmarAsistenciaAbierto, setConfirmarAsistenciaAbierto] = useState(false)
+  const [guardandoAsistencia, setGuardandoAsistencia] = useState(false)
 
   const miPiloto = user?.email ? pilotos.find((p) => p.email === user.email) : null
+  const debeConfirmarAsistencia = Boolean(miPiloto && !miPiloto.presenteSiguienteCarrera)
   const carrerasDelTorneo = torneoSeleccionado?.carreras ?? []
   const toggleCarrera = (carrera: Carrera) => {
     setCarreraSeleccionada((actual) =>
@@ -36,6 +44,20 @@ function App() {
   proximaCarrera.setHours(0, 0, 0, 0)
   const diffMs = proximaCarrera.getTime() - hoy.getTime()
   const diasHastaCarrera = Math.max(0, Math.ceil(diffMs / (1000 * 60 * 60 * 24)))
+
+  const handleConfirmarAsistencia = async (presente: boolean) => {
+    if (!miPiloto) return
+    setGuardandoAsistencia(true)
+    try {
+      const auth = getAuthLazy()
+      if (auth && !auth.currentUser) await signInWithPopup(auth, new GoogleAuthProvider())
+      await actualizarPresenteSiguienteCarrera(miPiloto.id, presente)
+      await refetchPilotos()
+      setConfirmarAsistenciaAbierto(false)
+    } finally {
+      setGuardandoAsistencia(false)
+    }
+  }
 
   if (isLoading) {
     return (
@@ -96,10 +118,36 @@ function App() {
             </button>
           </span>
         </div>
-        <span className="cartelProximaCarrera">
-          Faltan {diasHastaCarrera} días
-        </span>
+        {debeConfirmarAsistencia ? (
+          <button
+            type="button"
+            className="cartelProximaCarrera cartelProximaCarreraPendiente"
+            onClick={() => setConfirmarAsistenciaAbierto(true)}
+            title="Confirmar si vas a la próxima carrera"
+          >
+            Faltan {diasHastaCarrera} días
+          </button>
+        ) : (
+          <span className="cartelProximaCarrera">
+            Faltan {diasHastaCarrera} días
+          </span>
+        )}
       </header>
+      {confirmarAsistenciaAbierto && miPiloto && (
+        <div className="modalOverlay" role="dialog" aria-modal="true" aria-labelledby="modal-asistencia-titulo">
+          <div className="modalConfirmarAsistencia">
+            <h2 id="modal-asistencia-titulo">¿Vas a asistir a la {NOMBRE_PROXIMA_CARRERA}?</h2>
+            <div className="modalConfirmarAsistenciaBotones">
+              <button type="button" className="modalBotonSi" onClick={() => handleConfirmarAsistencia(true)} disabled={guardandoAsistencia}>
+                {guardandoAsistencia ? '…' : 'Sí'}
+              </button>
+              <button type="button" className="modalBotonNo" onClick={() => handleConfirmarAsistencia(false)} disabled={guardandoAsistencia}>
+                No
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {miPiloto && panelDatosAbierto && (
         <PanelDatosPiloto piloto={miPiloto} onClose={() => setPanelDatosAbierto(false)} />
       )}

@@ -90,6 +90,91 @@ body {
   border-radius: 6px;
 }
 
+.cartelProximaCarreraPendiente {
+  cursor: pointer;
+  border-color: var(--f1-red);
+  color: var(--f1-red);
+  animation: titilar 1.2s ease-in-out infinite;
+}
+
+.cartelProximaCarreraPendiente:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+@keyframes titilar {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.modalConfirmarAsistencia {
+  background: var(--f1-gray);
+  border: 1px solid var(--f1-gray-border);
+  border-radius: 8px;
+  padding: 1.5rem;
+  max-width: 360px;
+  width: 100%;
+}
+
+.modalConfirmarAsistencia h2 {
+  margin: 0 0 1.25rem;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.modalConfirmarAsistenciaBotones {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.modalBotonSi,
+.modalBotonNo {
+  flex: 1;
+  padding: 0.5rem 1rem;
+  font: inherit;
+  font-weight: 500;
+  border-radius: 6px;
+  cursor: pointer;
+  border: none;
+}
+
+.modalBotonSi {
+  background: var(--f1-red);
+  color: #fff;
+}
+
+.modalBotonSi:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.modalBotonNo {
+  background: transparent;
+  color: var(--f1-text-muted);
+  border: 1px solid var(--f1-gray-border);
+}
+
+.modalBotonNo:hover:not(:disabled) {
+  color: #fff;
+  border-color: var(--f1-text-muted);
+}
+
+.modalBotonSi:disabled,
+.modalBotonNo:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
 h1 {
   margin: 0 0 1.5rem;
   font-size: 1.75rem;

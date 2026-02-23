@@ -1,6 +1,9 @@
 import { useMemo, useState } from 'react'
 import type { Carrera, Torneo } from '../types'
+import { useData } from '../context/DataContext'
 import styles from './DetalleCarrera.module.css'
+
+const NOMBRE_CARRERA_ANOTADOS = 'Night Race'
 
 interface DetalleCarreraProps {
   torneo: Torneo | null
@@ -61,10 +64,20 @@ function getOrdenLargada(c: { datos?: Record<string, unknown> }): number | null 
 
 type ColumnaMovil = 'karting' | 'mejorTiempo' | 'vueltas' | 'ordenLargada' | 'elo'
 
+function nombreCompletoCorredor(p: { nombre: string; apellido?: string }) {
+  return [p.nombre, p.apellido].filter(Boolean).join(' ')
+}
+
 export function DetalleCarrera({ torneo, carrera }: DetalleCarreraProps) {
+  const { pilotos } = useData()
   const [ordenPosicion, setOrdenPosicion] = useState<OrdenPosicion>('asc')
   const [ordenPor, setOrdenPor] = useState<OrdenPor>('posicion')
   const [columnaMovil, setColumnaMovil] = useState<ColumnaMovil>('mejorTiempo')
+
+  const anotados = useMemo(
+    () => (carrera?.nombre === NOMBRE_CARRERA_ANOTADOS ? pilotos.filter((p) => p.presenteSiguienteCarrera === true) : []),
+    [carrera?.nombre, pilotos]
+  )
 
   /** Para Copa BNA 2026: carreras aún no corridas muestran las mismas columnas que "Única" (con desplegable en móvil) */
   const mostrarColumnasCompletas =
@@ -475,6 +488,22 @@ export function DetalleCarrera({ torneo, carrera }: DetalleCarreraProps) {
           </tbody>
         </table>
       </div>
+      {carrera.nombre === NOMBRE_CARRERA_ANOTADOS && (
+        <div className={styles.bloqueAnotados}>
+          <h3 className={styles.subtitulo}>Anotados</h3>
+          {anotados.length === 0 ? (
+            <p className={styles.anotadosVacio}>Nadie anotado aún.</p>
+          ) : (
+            <ul className={styles.listaAnotados}>
+              {anotados.map((p) => (
+                <li key={p.id} className={styles.itemAnotado}>
+                  {nombreCompletoCorredor(p)}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
     </section>
   )
 }

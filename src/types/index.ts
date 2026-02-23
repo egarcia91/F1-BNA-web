@@ -16,6 +16,8 @@ export interface Corredor {
   registrado?: boolean
   /** Email del usuario de Google vinculado (solo si registrado es true) */
   email?: string
+  /** true si el piloto confirmó asistencia a la próxima carrera; false por defecto */
+  presenteSiguienteCarrera?: boolean
   datos?: Record<string, unknown>
 }
 

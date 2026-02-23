@@ -368,3 +368,34 @@
   padding: 1rem;
   font-style: italic;
 }
+
+.bloqueAnotados {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--f1-gray-border);
+}
+
+.bloqueAnotados .subtitulo {
+  margin-bottom: 0.5rem;
+}
+
+.listaAnotados {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+}
+
+.itemAnotado {
+  font-size: 0.9rem;
+  color: #e8e8e8;
+}
+
+.anotadosVacio {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--f1-text-muted);
+  font-style: italic;
+}
