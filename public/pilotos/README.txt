@@ -8,4 +8,4 @@ Ejemplos:
   federico-di-paola.jpg
   raul-palavechino.jpg
 
-Formato recomendado: JPG o PNG. La imagen se mostrará circular en la lista de pilotos.
+Formato recomendado: JPG. La imagen se mostrará circular en la lista de pilotos.
