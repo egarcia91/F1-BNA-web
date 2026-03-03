@@ -399,3 +399,80 @@
   color: var(--f1-text-muted);
   font-style: italic;
 }
+
+.estrellaMvp {
+  color: #d4af37;
+  margin-right: 0.25rem;
+}
+
+.bloqueVotarMvp {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--f1-gray-border);
+}
+
+.bloqueVotarMvp .subtitulo {
+  margin-bottom: 0.5rem;
+}
+
+.mvpActual,
+.mvpNadie,
+.votosCargando {
+  margin: 0 0 0.75rem;
+  font-size: 0.95rem;
+  color: #e8e8e8;
+}
+
+.mvpNadie,
+.votosCargando {
+  color: var(--f1-text-muted);
+  font-style: italic;
+}
+
+.votarMvpForm {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+}
+
+.votarMvpLabel {
+  font-size: 0.9rem;
+  color: var(--f1-text-muted);
+}
+
+.votarMvpSelect {
+  padding: 0.4rem 0.6rem;
+  font: inherit;
+  color: #fff;
+  background: #252525;
+  border: 1px solid var(--f1-gray-border);
+  border-radius: 6px;
+  min-width: 10rem;
+}
+
+.votarMvpBoton {
+  padding: 0.4rem 0.75rem;
+  font: inherit;
+  color: #fff;
+  background: var(--f1-red);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.votarMvpBoton:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.votarMvpBoton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.errorVoto {
+  margin: 0.5rem 0 0;
+  font-size: 0.875rem;
+  color: var(--f1-red);
+  width: 100%;
+}

@@ -1,6 +1,11 @@
 import { useMemo, useState } from 'react'
+import { signInWithPopup, GoogleAuthProvider } from 'firebase/auth'
 import type { Carrera, Torneo } from '../types'
+import { useAuth } from '../context/AuthContext'
 import { useData } from '../context/DataContext'
+import { getAuthLazy } from '../lib/firebase'
+import { votarMvp } from '../lib/votarMvp'
+import { useVotosMvp } from '../hooks/useVotosMvp'
 import styles from './DetalleCarrera.module.css'
 
 const NOMBRE_CARRERA_ANOTADOS = 'Night Race'
@@ -69,10 +74,26 @@ function nombreCompletoCorredor(p: { nombre: string; apellido?: string }) {
 }
 
 export function DetalleCarrera({ torneo, carrera }: DetalleCarreraProps) {
+  const { user } = useAuth()
   const { pilotos } = useData()
   const [ordenPosicion, setOrdenPosicion] = useState<OrdenPosicion>('asc')
   const [ordenPor, setOrdenPor] = useState<OrdenPor>('posicion')
   const [columnaMovil, setColumnaMovil] = useState<ColumnaMovil>('mejorTiempo')
+  const [votandoMvp, setVotandoMvp] = useState(false)
+  const [errorVoto, setErrorVoto] = useState<string | null>(null)
+  const [votoSeleccionado, setVotoSeleccionado] = useState<string>('')
+
+  const { mvpPilotoId, myVote, loading: loadingVotos, refetch: refetchVotos } = useVotosMvp(
+    torneo?.id ?? null,
+    carrera?.id ?? null,
+    user?.email
+  )
+
+  const miPiloto = user?.email ? pilotos.find((p) => p.email === user.email) : null
+  const esParticipante = Boolean(
+    carrera && miPiloto && carrera.corredores.some((c) => c.id === miPiloto.id)
+  )
+  const carreraFinalizada = Boolean(carrera && carrera.corredores.length > 0)
 
   const anotados = useMemo(
     () => (carrera?.nombre === NOMBRE_CARRERA_ANOTADOS ? pilotos.filter((p) => p.presenteSiguienteCarrera === true) : []),
@@ -378,6 +399,9 @@ export function DetalleCarrera({ torneo, carrera }: DetalleCarreraProps) {
                     <span className={styles.posicion}>{posicion}</span>
                   </td>
                   <td className={styles.tdNombre}>
+                    {corredor.id === mvpPilotoId && (
+                      <span className={styles.estrellaMvp} title="MVP de la carrera" aria-hidden>★</span>
+                    )}
                     <span className={styles.nombreCompleto}>
                       {corredor.nombre}
                     </span>
@@ -488,6 +512,67 @@ export function DetalleCarrera({ torneo, carrera }: DetalleCarreraProps) {
           </tbody>
         </table>
       </div>
+      {carreraFinalizada && (
+        <div className={styles.bloqueVotarMvp}>
+          <h3 className={styles.subtitulo}>MVP de la carrera</h3>
+          {loadingVotos ? (
+            <p className={styles.votosCargando}>Cargando votos…</p>
+          ) : mvpPilotoId ? (
+            <p className={styles.mvpActual}>
+              <span className={styles.estrellaMvp} aria-hidden>★</span>{' '}
+              {nombreCompletoCorredor(carrera.corredores.find((c) => c.id === mvpPilotoId) ?? { nombre: '', apellido: '' })}
+            </p>
+          ) : (
+            <p className={styles.mvpNadie}>Aún no hay votos.</p>
+          )}
+          {esParticipante && (
+            <div className={styles.votarMvpForm}>
+              <label htmlFor="voto-mvp-select" className={styles.votarMvpLabel}>
+                {myVote ? 'Cambiar tu voto:' : 'Votar por el MVP:'}
+              </label>
+              <select
+                id="voto-mvp-select"
+                value={votoSeleccionado || myVote || ''}
+                onChange={(e) => setVotoSeleccionado(e.target.value)}
+                className={styles.votarMvpSelect}
+                disabled={votandoMvp}
+              >
+                <option value="">— Elegir —</option>
+                {carrera.corredores.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {nombreCompletoCorredor(c)}
+                  </option>
+                ))}
+              </select>
+              <button
+                type="button"
+                className={styles.votarMvpBoton}
+                disabled={votandoMvp || !(votoSeleccionado || myVote)}
+                onClick={async () => {
+                  const pilotId = votoSeleccionado || myVote
+                  if (!pilotId || !user?.email || !torneo?.id) return
+                  setErrorVoto(null)
+                  setVotandoMvp(true)
+                  try {
+                    const auth = getAuthLazy()
+                    if (auth && !auth.currentUser) await signInWithPopup(auth, new GoogleAuthProvider())
+                    await votarMvp(torneo.id, carrera.id, pilotId, user.email)
+                    await refetchVotos()
+                    setVotoSeleccionado('')
+                  } catch (e) {
+                    setErrorVoto(e instanceof Error ? e.message : 'No se pudo registrar el voto')
+                  } finally {
+                    setVotandoMvp(false)
+                  }
+                }}
+              >
+                {votandoMvp ? '…' : myVote ? 'Actualizar voto' : 'Votar'}
+              </button>
+              {errorVoto && <p className={styles.errorVoto}>{errorVoto}</p>}
+            </div>
+          )}
+        </div>
+      )}
       {carrera.nombre === NOMBRE_CARRERA_ANOTADOS && (
         <div className={styles.bloqueAnotados}>
           <h3 className={styles.subtitulo}>Anotados</h3>

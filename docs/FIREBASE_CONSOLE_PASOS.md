@@ -64,6 +64,12 @@ Seguí estos pasos una sola vez. Después solo vas a usar la app con los datos e
          match /carreras/{carreraId} {
            allow read: if true;
            allow write: if false;
+           match /votos/{voterEmail} {
+             allow read: if true;
+             allow create, update: if request.auth != null
+               && request.auth.token.email == voterEmail;
+             allow delete: if false;
+           }
          }
        }
      }

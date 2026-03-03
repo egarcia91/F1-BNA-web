@@ -52,7 +52,7 @@ export async function actualizarPiloto(
 ): Promise<void> {
   if (!db) throw new Error('Firebase no está configurado')
   const ref = doc(db, 'pilotos', pilotoId)
-  const update: Record<string, unknown> = {}
+  const update: Record<string, string | Record<string, unknown>> = {}
   if (payload.frase !== undefined) update.frase = payload.frase
   if (payload.datos !== undefined) update.datos = payload.datos
   await updateDoc(ref, update)
