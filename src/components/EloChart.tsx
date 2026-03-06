@@ -6,7 +6,7 @@ interface EloChartProps {
 }
 
 function formatFecha(fecha: string): string {
-  const [y, m, d] = fecha.split('-')
+  const [, m, d] = fecha.split('-')
   return `${d}/${m}`
 }
 
