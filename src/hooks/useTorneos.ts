@@ -15,21 +15,24 @@ function mapCorredorFromFirestore(id: string, d: Record<string, unknown>): Corre
   }
 }
 
+function parseCorredoresArray(raw: unknown): Corredor[] {
+  const list: Corredor[] = []
+  if (!Array.isArray(raw)) return list
+  raw.forEach((item) => {
+    if (item && typeof item === 'object' && typeof (item as { id?: unknown }).id === 'string') {
+      const c = item as { id: string; nombre?: string; datos?: Record<string, unknown> }
+      list.push({
+        id: c.id,
+        nombre: typeof c.nombre === 'string' ? c.nombre : '',
+        datos: c.datos && typeof c.datos === 'object' ? c.datos : undefined,
+      })
+    }
+  })
+  return list
+}
+
 function mapCarreraDoc(id: string, d: Record<string, unknown>): Carrera {
-  const corredores: Corredor[] = []
-  const rawCorredores = d.corredores
-  if (Array.isArray(rawCorredores)) {
-    rawCorredores.forEach((item) => {
-      if (item && typeof item === 'object' && typeof (item as { id?: unknown }).id === 'string') {
-        const c = item as { id: string; nombre?: string; datos?: Record<string, unknown> }
-        corredores.push({
-          id: c.id,
-          nombre: typeof c.nombre === 'string' ? c.nombre : '',
-          datos: c.datos && typeof c.datos === 'object' ? c.datos : undefined,
-        })
-      }
-    })
-  }
+  const corredores = parseCorredoresArray(d.corredores)
 
   let series: SerieHorario[] | undefined
   if (Array.isArray(d.series)) {
@@ -42,6 +45,21 @@ function mapCarreraDoc(id: string, d: Record<string, unknown>): Carrera {
     if (series.length === 0) series = undefined
   }
 
+  let corredoresPorSerie: Record<string, Corredor[]> | undefined
+  if (d.corredoresPorSerie && typeof d.corredoresPorSerie === 'object' && !Array.isArray(d.corredoresPorSerie)) {
+    const raw = d.corredoresPorSerie as Record<string, unknown>
+    const parsed: Record<string, Corredor[]> = {}
+    let hasEntries = false
+    for (const [key, val] of Object.entries(raw)) {
+      const arr = parseCorredoresArray(val)
+      if (arr.length > 0) {
+        parsed[key] = arr
+        hasEntries = true
+      }
+    }
+    if (hasEntries) corredoresPorSerie = parsed
+  }
+
   return {
     id,
     nombre: typeof d.nombre === 'string' ? d.nombre : '',
@@ -49,6 +67,7 @@ function mapCarreraDoc(id: string, d: Record<string, unknown>): Carrera {
     lugar: typeof d.lugar === 'string' ? d.lugar : undefined,
     mostrarEstrella: d.mostrarEstrella === true,
     series,
+    corredoresPorSerie,
     detalle: typeof d.detalle === 'string' ? d.detalle : undefined,
     corredores,
   }

@@ -220,6 +220,32 @@
   color: #f0c14b;
 }
 
+.itemMcLaren .eloChartToggle,
+.itemMercedes .eloChartToggle,
+.itemAlpine .eloChartToggle {
+  border-color: rgba(0, 0, 0, 0.3);
+  color: rgba(0, 0, 0, 0.5);
+}
+
+.itemMcLaren .eloChartToggle:hover,
+.itemMercedes .eloChartToggle:hover,
+.itemAlpine .eloChartToggle:hover {
+  background: rgba(0, 0, 0, 0.1);
+  color: #000;
+  border-color: rgba(0, 0, 0, 0.5);
+}
+
+.itemFerrari .eloChartToggle {
+  border-color: rgba(255, 235, 59, 0.4);
+  color: rgba(255, 235, 59, 0.6);
+}
+
+.itemFerrari .eloChartToggle:hover {
+  background: rgba(0, 0, 0, 0.15);
+  color: #ffeb3b;
+  border-color: #ffeb3b;
+}
+
 .logoWrap {
   flex-shrink: 0;
   width: 2.5rem;
@@ -301,6 +327,37 @@
 .datoLabel {
   color: var(--f1-text-muted);
   font-weight: 500;
+}
+
+.eloChartToggle {
+  background: none;
+  border: 1px solid #555;
+  border-radius: 3px;
+  color: #aaa;
+  font-size: 0.65rem;
+  padding: 1px 6px;
+  margin-left: 6px;
+  cursor: pointer;
+  vertical-align: middle;
+  line-height: 1;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.eloChartToggle:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  border-color: #888;
+}
+
+.eloChartPanel {
+  flex-basis: 100%;
+  width: 100%;
+  background: #111;
+  border-radius: 6px;
+  padding: 16px 12px;
+  margin-top: 6px;
+  display: flex;
+  justify-content: center;
 }
 
 .datoFrase {

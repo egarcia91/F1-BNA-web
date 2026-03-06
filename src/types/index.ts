@@ -40,6 +40,8 @@ export interface Carrera {
   mostrarEstrella?: boolean
   /** Series con horario (ej. Serie 1 : 21:30) */
   series?: SerieHorario[]
+  /** Corredores separados por serie (clave = horario de la serie, ej. "21:30") */
+  corredoresPorSerie?: Record<string, Corredor[]>
   /** Texto descriptivo de la carrera (ej. criterios de clasificación para la final) */
   detalle?: string
   corredores: Corredor[]

@@ -91,6 +91,18 @@ async function main() {
     await db.collection('torneos').doc(t.id).set(torneoData, { merge: true })
 
     for (const c of t.carreras) {
+      const mapCorr = (corr: { id: string; nombre: string; datos?: Record<string, unknown> }) => {
+        const item: Record<string, unknown> = { id: corr.id, nombre: corr.nombre }
+        if (corr.datos != null) item.datos = corr.datos
+        return item
+      }
+      let corredoresPorSerie: Record<string, unknown[]> | undefined
+      if (c.corredoresPorSerie) {
+        corredoresPorSerie = {}
+        for (const [key, arr] of Object.entries(c.corredoresPorSerie)) {
+          corredoresPorSerie[key] = arr.map(mapCorr)
+        }
+      }
       const carreraData = omitUndefined({
         nombre: c.nombre,
         fecha: c.fecha,
@@ -98,11 +110,8 @@ async function main() {
         mostrarEstrella: c.mostrarEstrella,
         series: c.series,
         detalle: c.detalle,
-        corredores: c.corredores.map((corr) => {
-          const item: Record<string, unknown> = { id: corr.id, nombre: corr.nombre }
-          if (corr.datos != null) item.datos = corr.datos
-          return item
-        }),
+        corredoresPorSerie,
+        corredores: c.corredores.map(mapCorr),
       })
       await db.collection('torneos').doc(t.id).collection('carreras').doc(c.id).set(carreraData, { merge: true })
     }

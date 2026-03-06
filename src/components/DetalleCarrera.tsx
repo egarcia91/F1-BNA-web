@@ -6,6 +6,7 @@ import { useData } from '../context/DataContext'
 import { getAuthLazy } from '../lib/firebase'
 import { votarMvp } from '../lib/votarMvp'
 import { useVotosMvp } from '../hooks/useVotosMvp'
+import { ELO_BASE, eloAntesDeLaCarrera, calcularDeltaParaPosicion, calcularEloGlobal } from '../lib/elo'
 import styles from './DetalleCarrera.module.css'
 
 const NOMBRE_CARRERA_ANOTADOS = 'Night Race'
@@ -69,31 +70,6 @@ function getOrdenLargada(c: { datos?: Record<string, unknown> }): number | null 
 
 type ColumnaMovil = 'karting' | 'mejorTiempo' | 'vueltas' | 'ordenLargada' | 'elo'
 
-const ELO_BASE = 900
-function deltaEloPorPosicion(pos: number): number {
-  return pos <= 8 ? 9 - pos : 8 - pos
-}
-
-/**
- * Calcula el Elo acumulado de cada piloto justo antes de una carrera dada,
- * recorriendo todas las carreras de todos los torneos en orden.
- */
-function eloAntesDeLaCarrera(
-  torneos: { carreras: { id: string; corredores: { id: string }[] }[] }[],
-  carreraId: string
-): Map<string, number> {
-  const map = new Map<string, number>()
-  for (const torneo of torneos) {
-    for (const carrera of torneo.carreras) {
-      if (carrera.id === carreraId) return map
-      carrera.corredores.forEach((c, index) => {
-        const pos = index + 1
-        map.set(c.id, (map.get(c.id) ?? ELO_BASE) + deltaEloPorPosicion(pos))
-      })
-    }
-  }
-  return map
-}
 
 function nombreCompletoCorredor(p: { nombre: string; apellido?: string }) {
   return [p.nombre, p.apellido].filter(Boolean).join(' ')
@@ -109,6 +85,28 @@ export function DetalleCarrera({ torneo, carrera }: DetalleCarreraProps) {
   const [errorVoto, setErrorVoto] = useState<string | null>(null)
   const [votoSeleccionado, setVotoSeleccionado] = useState<string>('')
 
+  const tieneSeries = Boolean(carrera?.corredoresPorSerie && carrera?.series && carrera.series.length > 0)
+  const seriesHorarios = useMemo(
+    () => (tieneSeries && carrera?.series ? carrera.series.map((s) => s.horario) : []),
+    [tieneSeries, carrera?.series]
+  )
+  const [serieSeleccionada, setSerieSeleccionada] = useState<string>(() =>
+    seriesHorarios.length > 0 ? seriesHorarios[0] : ''
+  )
+
+  const esAmbas = tieneSeries && serieSeleccionada === 'ambas'
+
+  const corredoresActivos = useMemo(() => {
+    if (!carrera) return []
+    if (tieneSeries && carrera.corredoresPorSerie) {
+      if (serieSeleccionada === 'ambas') {
+        return Object.values(carrera.corredoresPorSerie).flat()
+      }
+      return carrera.corredoresPorSerie[serieSeleccionada] ?? []
+    }
+    return carrera.corredores
+  }, [carrera, tieneSeries, serieSeleccionada])
+
   const { mvpPilotoId, myVote, loading: loadingVotos, refetch: refetchVotos } = useVotosMvp(
     torneo?.id ?? null,
     carrera?.id ?? null,
@@ -116,20 +114,26 @@ export function DetalleCarrera({ torneo, carrera }: DetalleCarreraProps) {
   )
 
   const miPiloto = user?.email ? pilotos.find((p) => p.email === user.email) : null
+  const todosCorredoresCarrera = useMemo(() => {
+    if (!carrera) return []
+    if (tieneSeries && carrera.corredoresPorSerie) {
+      return Object.values(carrera.corredoresPorSerie).flat()
+    }
+    return carrera.corredores
+  }, [carrera, tieneSeries])
   const esParticipante = Boolean(
-    carrera && miPiloto && carrera.corredores.some((c) => c.id === miPiloto.id)
+    carrera && miPiloto && todosCorredoresCarrera.some((c) => c.id === miPiloto.id)
   )
-  const carreraFinalizada = Boolean(carrera && carrera.corredores.length > 0)
+  const carreraFinalizada = Boolean(carrera && todosCorredoresCarrera.length > 0)
 
   const anotados = useMemo(
     () => (carrera?.nombre === NOMBRE_CARRERA_ANOTADOS ? pilotos.filter((p) => p.presenteSiguienteCarrera === true) : []),
     [carrera?.nombre, pilotos]
   )
 
-  /** Para Copa BNA 2026: carreras aún no corridas muestran las mismas columnas que "Única" (con desplegable en móvil) */
   const mostrarColumnasCompletas =
     !!carrera &&
-    carrera.corredores.length === 0 &&
+    todosCorredoresCarrera.length === 0 &&
     torneo?.nombre === 'Copa BNA 2026'
 
   if (!carrera) {
@@ -143,8 +147,8 @@ export function DetalleCarrera({ torneo, carrera }: DetalleCarreraProps) {
   }
 
   const corredoresOrdenados = useMemo(() => {
-    const list = [...carrera.corredores]
-    if (ordenPor === 'mejorTiempo') {
+    const list = [...corredoresActivos]
+    if (esAmbas || ordenPor === 'mejorTiempo') {
       return list.sort((a, b) => {
         const ta = getMejorTiempo(a) ?? Infinity
         const tb = getMejorTiempo(b) ?? Infinity
@@ -159,7 +163,7 @@ export function DetalleCarrera({ torneo, carrera }: DetalleCarreraProps) {
       })
     }
     return ordenPosicion === 'desc' ? list.reverse() : list
-  }, [carrera.corredores, ordenPosicion, ordenPor])
+  }, [corredoresActivos, ordenPosicion, ordenPor, esAmbas])
 
   const toggleOrdenPosicion = () => {
     setOrdenPor('posicion')
@@ -180,16 +184,23 @@ export function DetalleCarrera({ torneo, carrera }: DetalleCarreraProps) {
       ? getMejorTiempo(corredoresOrdenados[0])
       : null
 
-  /** Posición de llegada en la carrera (orden original); no cambia al reordenar por otras columnas */
-  const getPosicionCarrera = (corredor: (typeof carrera.corredores)[0]) => {
-    const idx = carrera.corredores.findIndex((c) => c.id === corredor.id)
+  const getPosicionCarrera = (corredor: (typeof corredoresActivos)[0]) => {
+    const idx = corredoresActivos.findIndex((c) => c.id === corredor.id)
     return idx >= 0 ? idx + 1 : '—'
   }
 
   const eloPrevioMap = useMemo(
-    () => (carrera ? eloAntesDeLaCarrera(torneos, carrera.id) : new Map<string, number>()),
-    [torneos, carrera]
+    () => (carrera
+      ? eloAntesDeLaCarrera(torneos, carrera.id, tieneSeries && !esAmbas ? serieSeleccionada : null)
+      : new Map<string, number>()),
+    [torneos, carrera, tieneSeries, serieSeleccionada, esAmbas]
   )
+
+  /** Elo final (tras todas las series) para la vista "Ambas" */
+  const eloFinalMap = useMemo(() => {
+    if (!esAmbas) return eloPrevioMap
+    return calcularEloGlobal(torneos).eloMap
+  }, [esAmbas, torneos, eloPrevioMap])
 
   const ariaSortOrdenLargada =
     ordenPor === 'ordenLargada'
@@ -209,38 +220,140 @@ export function DetalleCarrera({ torneo, carrera }: DetalleCarreraProps) {
       {carrera.lugar && (
         <p className={styles.lugar}>Lugar: {carrera.lugar}</p>
       )}
-      {carrera.series && carrera.series.length > 0 && (
-        <div className={styles.series}>
-          {carrera.series.map((s) => (
-            <p key={s.nombre} className={styles.serieItem}>
-              {s.nombre} : {s.horario}
-            </p>
-          ))}
+      {tieneSeries && carrera.series && carrera.series.length > 0 && (
+        <div className={styles.selectorSerie}>
+          <label htmlFor="serie-select" className={styles.selectorSerieLabel}>Serie:</label>
+          <select
+            id="serie-select"
+            value={serieSeleccionada}
+            onChange={(e) => setSerieSeleccionada(e.target.value)}
+            className={styles.selectorSerieSelect}
+          >
+            {carrera.series.map((s) => (
+              <option key={s.horario} value={s.horario}>
+                {s.horario}
+              </option>
+            ))}
+            <option value="ambas">Ambas</option>
+          </select>
         </div>
       )}
       {carrera.detalle && (
         <p className={styles.detalle}>{carrera.detalle}</p>
       )}
       <h3 className={styles.subtitulo}>Corredores</h3>
-      {(carrera.corredores.some(
+      {esAmbas ? (
+        /* ── Vista "Ambas": tabla simplificada, ordenada por mejor tiempo ── */
+        <>
+          <div className={styles.toggleSelect}>
+            <label htmlFor="columna-movil-select" className={styles.toggleSelectLabel}>
+              Ver columna:
+            </label>
+            <select
+              id="columna-movil-select"
+              value={columnaMovil}
+              onChange={(e) => setColumnaMovil(e.target.value as ColumnaMovil)}
+              className={styles.toggleSelectNative}
+              aria-label="Elegir columna a mostrar"
+            >
+              <option value="karting">Karting</option>
+              <option value="mejorTiempo">Mejor tiempo</option>
+              <option value="vueltas">Vueltas</option>
+              <option value="elo">Elo</option>
+            </select>
+          </div>
+          <div className={styles.tablaWrapper} data-columna-movil={columnaMovil}>
+            <table className={styles.tabla}>
+              <thead>
+                <tr>
+                  <th className={styles.th}>
+                    <span className={styles.thDesktop}>Más Veloz</span>
+                    <span className={styles.thMobile}>#</span>
+                  </th>
+                  <th className={styles.th}>Nombre</th>
+                  <th className={`${styles.th} ${styles.thKarting}`}>Karting</th>
+                  <th className={`${styles.th} ${styles.thVueltas}`}>Vueltas</th>
+                  <th className={`${styles.th} ${styles.thTiempo}`}>
+                    Mejor Tiempo
+                    <span className={styles.thIndicador} aria-hidden> ↓</span>
+                  </th>
+                  <th className={`${styles.th} ${styles.thElo}`}>Elo</th>
+                </tr>
+              </thead>
+              <tbody>
+                {corredoresOrdenados.map((corredor, index) => {
+                  const mejorTiempo = getMejorTiempo(corredor)
+                  const mejorAbsoluto = corredoresOrdenados[0] ? getMejorTiempo(corredoresOrdenados[0]) : null
+                  const diferencia =
+                    index >= 1 && mejorAbsoluto != null && mejorTiempo != null
+                      ? mejorTiempo - mejorAbsoluto
+                      : null
+                  const eloFinal = eloFinalMap.get(corredor.id) ?? ELO_BASE
+                  return (
+                    <tr key={corredor.id} className={styles.fila}>
+                      <td className={styles.tdPosicion}>
+                        <span className={styles.posicion}>{index + 1}</span>
+                      </td>
+                      <td className={styles.tdNombre}>
+                        <span className={styles.nombreCompleto}>{corredor.nombre}</span>
+                        <span className={styles.nombreCorto}>{nombreCorto(corredor.nombre)}</span>
+                      </td>
+                      <td className={styles.tdKarting}>
+                        {corredor.datos && typeof corredor.datos === 'object' && 'karting' in corredor.datos &&
+                        typeof (corredor.datos as { karting?: number }).karting === 'number'
+                          ? (corredor.datos as { karting: number }).karting
+                          : '—'}
+                      </td>
+                      <td className={styles.tdVueltas}>
+                        {corredor.datos && typeof corredor.datos === 'object' && 'vueltas' in corredor.datos &&
+                        typeof (corredor.datos as { vueltas?: number }).vueltas === 'number'
+                          ? (corredor.datos as { vueltas: number }).vueltas
+                          : '—'}
+                      </td>
+                      <td
+                        className={
+                          index === 0
+                            ? `${styles.tdTiempo} ${styles.tiempoMejor}`
+                            : `${styles.tdTiempo} ${styles.tiempoResto}`
+                        }
+                      >
+                        {index >= 1 && diferencia != null && (
+                          <span className={styles.diferenciaTiempo}>
+                            +{diferencia.toFixed(3)}{' '}
+                          </span>
+                        )}
+                        {mejorTiempo != null ? `${mejorTiempo.toFixed(3)} s` : '—'}
+                      </td>
+                      <td className={styles.tdElo}>{eloFinal}</td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+        </>
+      ) : (
+        /* ── Vista por serie o carrera normal ── */
+        <>
+      {(corredoresActivos.some(
         (c) =>
           c.datos &&
           typeof c.datos === 'object' &&
           'karting' in c.datos
       ) ||
-        carrera.corredores.some(
+        corredoresActivos.some(
           (c) =>
             c.datos &&
             typeof c.datos === 'object' &&
             'vueltas' in c.datos
         ) ||
-        carrera.corredores.some(
+        corredoresActivos.some(
           (c) =>
             c.datos &&
             typeof c.datos === 'object' &&
             'ordenLargada' in c.datos
         ) ||
-        carrera.corredores.length > 0 ||
+        corredoresActivos.length > 0 ||
         mostrarColumnasCompletas) && (
         <div className={styles.toggleSelect}>
             <label htmlFor="columna-movil-select" className={styles.toggleSelectLabel}>
@@ -253,18 +366,18 @@ export function DetalleCarrera({ torneo, carrera }: DetalleCarreraProps) {
               className={styles.toggleSelectNative}
               aria-label="Elegir columna a mostrar"
             >
-              {(carrera.corredores.some(
+              {(corredoresActivos.some(
                 (c) => c.datos && typeof c.datos === 'object' && 'karting' in c.datos
               ) || mostrarColumnasCompletas) && (
                 <option value="karting">Karting</option>
               )}
               <option value="mejorTiempo">Mejor tiempo</option>
-              {(carrera.corredores.some(
+              {(corredoresActivos.some(
                 (c) => c.datos && typeof c.datos === 'object' && 'vueltas' in c.datos
               ) || mostrarColumnasCompletas) && (
                 <option value="vueltas">Vueltas</option>
               )}
-              {(carrera.corredores.some(
+              {(corredoresActivos.some(
                 (c) => c.datos && typeof c.datos === 'object' && 'ordenLargada' in c.datos
               ) || mostrarColumnasCompletas) && (
                 <option value="ordenLargada">Orden largada</option>
@@ -276,25 +389,25 @@ export function DetalleCarrera({ torneo, carrera }: DetalleCarreraProps) {
       <div
         className={styles.tablaWrapper}
         data-columna-movil={
-          carrera.corredores.some(
+          corredoresActivos.some(
             (c) =>
               c.datos &&
               typeof c.datos === 'object' &&
               'karting' in c.datos
           ) ||
-          carrera.corredores.some(
+          corredoresActivos.some(
             (c) =>
               c.datos &&
               typeof c.datos === 'object' &&
               'vueltas' in c.datos
           ) ||
-          carrera.corredores.some(
+          corredoresActivos.some(
             (c) =>
               c.datos &&
               typeof c.datos === 'object' &&
               'ordenLargada' in c.datos
           ) ||
-          carrera.corredores.length > 0 ||
+          corredoresActivos.length > 0 ||
           mostrarColumnasCompletas
             ? columnaMovil
             : undefined
@@ -328,7 +441,7 @@ export function DetalleCarrera({ torneo, carrera }: DetalleCarreraProps) {
                 </button>
               </th>
               <th className={styles.th}>Nombre</th>
-              {(carrera.corredores.some(
+              {(corredoresActivos.some(
                 (c) =>
                   c.datos &&
                   typeof c.datos === 'object' &&
@@ -336,7 +449,7 @@ export function DetalleCarrera({ torneo, carrera }: DetalleCarreraProps) {
               ) || mostrarColumnasCompletas) && (
                 <th className={`${styles.th} ${styles.thKarting}`}>Karting</th>
               )}
-              {(carrera.corredores.some(
+              {(corredoresActivos.some(
                 (c) =>
                   c.datos &&
                   typeof c.datos === 'object' &&
@@ -344,7 +457,7 @@ export function DetalleCarrera({ torneo, carrera }: DetalleCarreraProps) {
               ) || mostrarColumnasCompletas) && (
                 <th className={`${styles.th} ${styles.thVueltas}`}>Vueltas</th>
               )}
-              {(carrera.corredores.some(
+              {(corredoresActivos.some(
                 (c) =>
                   c.datos &&
                   typeof c.datos === 'object' &&
@@ -397,7 +510,7 @@ export function DetalleCarrera({ torneo, carrera }: DetalleCarreraProps) {
             corredoresOrdenados.map((corredor, index) => {
               const posicion = getPosicionCarrera(corredor)
               const posicionCarreraNum =
-                carrera.corredores.findIndex((c) => c.id === corredor.id) + 1
+                corredoresActivos.findIndex((c) => c.id === corredor.id) + 1
               const ordenLargadaVal =
                 ordenPor === 'ordenLargada' ? getOrdenLargada(corredor) : null
               const diffPosicion =
@@ -434,7 +547,7 @@ export function DetalleCarrera({ torneo, carrera }: DetalleCarreraProps) {
                       {nombreCorto(corredor.nombre)}
                     </span>
                   </td>
-                  {(carrera.corredores.some(
+                  {(corredoresActivos.some(
                     (c) =>
                       c.datos &&
                       typeof c.datos === 'object' &&
@@ -449,7 +562,7 @@ export function DetalleCarrera({ torneo, carrera }: DetalleCarreraProps) {
                         : '—'}
                     </td>
                   )}
-                  {(carrera.corredores.some(
+                  {(corredoresActivos.some(
                     (c) =>
                       c.datos &&
                       typeof c.datos === 'object' &&
@@ -464,7 +577,7 @@ export function DetalleCarrera({ torneo, carrera }: DetalleCarreraProps) {
                         : '—'}
                     </td>
                   )}
-                  {(carrera.corredores.some(
+                  {(corredoresActivos.some(
                     (c) =>
                       c.datos &&
                       typeof c.datos === 'object' &&
@@ -514,7 +627,9 @@ export function DetalleCarrera({ torneo, carrera }: DetalleCarreraProps) {
                   </td>
                   <td className={styles.tdElo}>
                     {posicionCarreraNum >= 1 ? (() => {
-                      const delta = deltaEloPorPosicion(posicionCarreraNum)
+                      const delta = calcularDeltaParaPosicion(
+                        posicionCarreraNum, corredor.id, corredoresActivos, eloPrevioMap
+                      )
                       const eloPrevio = eloPrevioMap.get(corredor.id) ?? ELO_BASE
                       return (
                         <>
@@ -541,6 +656,8 @@ export function DetalleCarrera({ torneo, carrera }: DetalleCarreraProps) {
           </tbody>
         </table>
       </div>
+        </>
+      )}
       {carreraFinalizada && (
         <div className={styles.bloqueVotarMvp}>
           <h3 className={styles.subtitulo}>MVP de la carrera</h3>
@@ -549,7 +666,7 @@ export function DetalleCarrera({ torneo, carrera }: DetalleCarreraProps) {
           ) : mvpPilotoId ? (
             <p className={styles.mvpActual}>
               <span className={styles.estrellaMvp} aria-hidden>★</span>{' '}
-              {nombreCompletoCorredor(carrera.corredores.find((c) => c.id === mvpPilotoId) ?? { nombre: '', apellido: '' })}
+              {nombreCompletoCorredor(todosCorredoresCarrera.find((c) => c.id === mvpPilotoId) ?? { nombre: '', apellido: '' })}
             </p>
           ) : (
             <p className={styles.mvpNadie}>Aún no hay votos.</p>
@@ -567,7 +684,7 @@ export function DetalleCarrera({ torneo, carrera }: DetalleCarreraProps) {
                 disabled={votandoMvp}
               >
                 <option value="">— Elegir —</option>
-                {carrera.corredores.map((c) => (
+                {todosCorredoresCarrera.map((c) => (
                   <option key={c.id} value={c.id}>
                     {nombreCompletoCorredor(c)}
                   </option>

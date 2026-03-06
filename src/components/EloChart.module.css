@@ -1,0 +1,67 @@
+.svg {
+  width: 100%;
+  max-width: 340px;
+  height: auto;
+  display: block;
+}
+
+.line {
+  fill: none;
+  stroke: #fff;
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.dot {
+  fill: #fff;
+  stroke: #111;
+  stroke-width: 1.5;
+}
+
+.gridLine {
+  stroke: #333;
+  stroke-width: 0.5;
+  stroke-dasharray: 3 3;
+}
+
+.yLabel {
+  fill: #777;
+  font-size: 9px;
+  text-anchor: end;
+  dominant-baseline: middle;
+}
+
+.valLabel {
+  fill: #fff;
+  font-size: 9px;
+  text-anchor: middle;
+  font-weight: 600;
+}
+
+.diffUp {
+  fill: #22c55e;
+  font-size: 7.5px;
+  text-anchor: middle;
+  font-weight: 600;
+}
+
+.diffDown {
+  fill: #ef4444;
+  font-size: 7.5px;
+  text-anchor: middle;
+  font-weight: 600;
+}
+
+.xLabel {
+  fill: #999;
+  font-size: 8px;
+  text-anchor: middle;
+}
+
+.axisTitle {
+  fill: #666;
+  font-size: 9px;
+  text-anchor: middle;
+  font-weight: 500;
+}

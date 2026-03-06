@@ -1,6 +1,8 @@
-import { useMemo, useState, useEffect } from 'react'
+import { useMemo, useState, useEffect, useCallback } from 'react'
 import type { Corredor, Torneo } from '../types'
 import { useData } from '../context/DataContext'
+import { calcularEloGlobal, ELO_BASE, listasDeCorrredores } from '../lib/elo'
+import { EloChart } from './EloChart'
 import styles from './SeccionPilotos.module.css'
 
 const MEDIA_MOBILE = '(max-width: 768px)'
@@ -57,59 +59,40 @@ function datoPeso(p: Corredor) {
   return w != null ? `${w} kg` : '—'
 }
 
-/** Cuenta de carreras en las que participó cada piloto (por id) en todos los torneos */
+/** Cuenta de carreras/series en las que participó cada piloto */
 function contarCarrerasPorPiloto(torneos: Torneo[]): Map<string, number> {
   const map = new Map<string, number>()
   for (const torneo of torneos) {
     for (const carrera of torneo.carreras) {
-      for (const c of carrera.corredores) {
-        const id = c.id
-        map.set(id, (map.get(id) ?? 0) + 1)
+      for (const lista of listasDeCorrredores(carrera)) {
+        for (const c of lista) {
+          map.set(c.id, (map.get(c.id) ?? 0) + 1)
+        }
       }
     }
   }
   return map
 }
 
-/** Mejor puesto (posición más baja = mejor) por piloto en todas las carreras; sin carrera = sin dato */
+/** Mejor puesto (posición más baja = mejor) por piloto en todas las carreras/series */
 function mejorPuestoPorPiloto(torneos: Torneo[]): Map<string, number> {
   const map = new Map<string, number>()
   for (const torneo of torneos) {
     for (const carrera of torneo.carreras) {
-      carrera.corredores.forEach((c, index) => {
-        const posicion = index + 1
-        const id = c.id
-        const actual = map.get(id)
-        if (actual === undefined || posicion < actual) {
-          map.set(id, posicion)
-        }
-      })
+      for (const lista of listasDeCorrredores(carrera)) {
+        lista.forEach((c, index) => {
+          const posicion = index + 1
+          const actual = map.get(c.id)
+          if (actual === undefined || posicion < actual) {
+            map.set(c.id, posicion)
+          }
+        })
+      }
     }
   }
   return map
 }
 
-const ELO_BASE = 900
-/** Delta por posición: 1-8 suman 8..1, 9-16 restan 1..8 */
-function deltaEloPorPosicion(pos: number): number {
-  return pos <= 8 ? 9 - pos : 8 - pos
-}
-
-/** Elo actual por piloto: base 900 + suma de deltas de cada carrera en la que participó */
-function eloPorPiloto(torneos: Torneo[]): Map<string, number> {
-  const map = new Map<string, number>()
-  for (const torneo of torneos) {
-    for (const carrera of torneo.carreras) {
-      carrera.corredores.forEach((c, index) => {
-        const posicion = index + 1
-        const delta = deltaEloPorPosicion(posicion)
-        const id = c.id
-        map.set(id, (map.get(id) ?? ELO_BASE) + delta)
-      })
-    }
-  }
-  return map
-}
 
 export function SeccionPilotos() {
   const { pilotos, torneos } = useData()
@@ -129,11 +112,25 @@ export function SeccionPilotos() {
 
   const carrerasPorPiloto = useMemo(() => contarCarrerasPorPiloto(torneos), [torneos])
   const mejorPuestoPorPilotoMap = useMemo(() => mejorPuestoPorPiloto(torneos), [torneos])
-  const eloPorPilotoMap = useMemo(() => eloPorPiloto(torneos), [torneos])
+  const eloSnapshot = useMemo(() => calcularEloGlobal(torneos), [torneos])
+  const eloPorPilotoMap = eloSnapshot.eloMap
+  const eloHistorialMap = eloSnapshot.historial
+  const eloFechasMap = eloSnapshot.fechas
+
+  const [chartAbierto, setChartAbierto] = useState<Set<string>>(new Set())
 
   const toggleExpandir = (id: string) => {
     setExpandidoId((prev) => (prev === id ? null : id))
   }
+
+  const toggleChart = useCallback((id: string) => {
+    setChartAbierto((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }, [])
 
   const ocultarFoto = (id: string) => {
     setFotosFallidas((prev) => new Set(prev).add(id))
@@ -273,6 +270,16 @@ export function SeccionPilotos() {
                   <span className={styles.dato}>
                     <span className={styles.datoLabel}>Elo</span>{' '}
                     {eloPorPilotoMap.get(piloto.id) ?? ELO_BASE}
+                    {(eloHistorialMap.get(piloto.id)?.length ?? 0) > 1 && (
+                      <button
+                        type="button"
+                        className={styles.eloChartToggle}
+                        onClick={(e) => { e.stopPropagation(); toggleChart(piloto.id) }}
+                        aria-expanded={chartAbierto.has(piloto.id)}
+                      >
+                        {chartAbierto.has(piloto.id) ? '▲' : '▼'}
+                      </button>
+                    )}
                   </span>
                   <span className={styles.dato}>
                     <span className={styles.datoLabel}>Registrado</span>{' '}
@@ -288,6 +295,11 @@ export function SeccionPilotos() {
               )}
             </div>
             </div>
+            {!esMovil && chartAbierto.has(piloto.id) && (eloHistorialMap.get(piloto.id)?.length ?? 0) > 1 && (
+              <div className={styles.eloChartPanel}>
+                <EloChart historial={eloHistorialMap.get(piloto.id)!} fechas={eloFechasMap.get(piloto.id)} />
+              </div>
+            )}
             {esMovil && (
               <div className={styles.itemContenidoExpandido} aria-hidden={!expandido}>
                 <span className={styles.dato}>
@@ -310,6 +322,16 @@ export function SeccionPilotos() {
                 <span className={styles.dato}>
                   <span className={styles.datoLabel}>Elo</span>{' '}
                   {eloPorPilotoMap.get(piloto.id) ?? ELO_BASE}
+                  {(eloHistorialMap.get(piloto.id)?.length ?? 0) > 1 && (
+                    <button
+                      type="button"
+                      className={styles.eloChartToggle}
+                      onClick={(e) => { e.stopPropagation(); toggleChart(piloto.id) }}
+                      aria-expanded={chartAbierto.has(piloto.id)}
+                    >
+                      {chartAbierto.has(piloto.id) ? '▲' : '▼'}
+                    </button>
+                  )}
                 </span>
                 <span className={styles.dato}>
                   <span className={styles.datoLabel}>Registrado</span>{' '}
@@ -320,6 +342,11 @@ export function SeccionPilotos() {
                     <span className={styles.datoLabel}>Frase</span>{' '}
                     <span className={styles.datoFraseValor}>{piloto.frase}</span>
                   </span>
+                )}
+                {chartAbierto.has(piloto.id) && (eloHistorialMap.get(piloto.id)?.length ?? 0) > 1 && (
+                  <div className={styles.eloChartPanel}>
+                    <EloChart historial={eloHistorialMap.get(piloto.id)!} fechas={eloFechasMap.get(piloto.id)} />
+                  </div>
                 )}
               </div>
             )}
