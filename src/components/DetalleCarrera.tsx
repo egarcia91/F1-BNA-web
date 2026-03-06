@@ -69,13 +69,39 @@ function getOrdenLargada(c: { datos?: Record<string, unknown> }): number | null 
 
 type ColumnaMovil = 'karting' | 'mejorTiempo' | 'vueltas' | 'ordenLargada' | 'elo'
 
+const ELO_BASE = 900
+function deltaEloPorPosicion(pos: number): number {
+  return pos <= 8 ? 9 - pos : 8 - pos
+}
+
+/**
+ * Calcula el Elo acumulado de cada piloto justo antes de una carrera dada,
+ * recorriendo todas las carreras de todos los torneos en orden.
+ */
+function eloAntesDeLaCarrera(
+  torneos: { carreras: { id: string; corredores: { id: string }[] }[] }[],
+  carreraId: string
+): Map<string, number> {
+  const map = new Map<string, number>()
+  for (const torneo of torneos) {
+    for (const carrera of torneo.carreras) {
+      if (carrera.id === carreraId) return map
+      carrera.corredores.forEach((c, index) => {
+        const pos = index + 1
+        map.set(c.id, (map.get(c.id) ?? ELO_BASE) + deltaEloPorPosicion(pos))
+      })
+    }
+  }
+  return map
+}
+
 function nombreCompletoCorredor(p: { nombre: string; apellido?: string }) {
   return [p.nombre, p.apellido].filter(Boolean).join(' ')
 }
 
 export function DetalleCarrera({ torneo, carrera }: DetalleCarreraProps) {
   const { user } = useAuth()
-  const { pilotos } = useData()
+  const { pilotos, torneos } = useData()
   const [ordenPosicion, setOrdenPosicion] = useState<OrdenPosicion>('asc')
   const [ordenPor, setOrdenPor] = useState<OrdenPor>('posicion')
   const [columnaMovil, setColumnaMovil] = useState<ColumnaMovil>('mejorTiempo')
@@ -160,11 +186,10 @@ export function DetalleCarrera({ torneo, carrera }: DetalleCarreraProps) {
     return idx >= 0 ? idx + 1 : '—'
   }
 
-  /** Elo tras la carrera: base 900; pos 1-8 suman 8..1; pos 9-16 restan 1..8 */
-  const eloPorPosicion = (pos: number): number => {
-    const delta = pos <= 8 ? 9 - pos : 8 - pos
-    return 900 + delta
-  }
+  const eloPrevioMap = useMemo(
+    () => (carrera ? eloAntesDeLaCarrera(torneos, carrera.id) : new Map<string, number>()),
+    [torneos, carrera]
+  )
 
   const ariaSortOrdenLargada =
     ordenPor === 'ordenLargada'
@@ -488,20 +513,24 @@ export function DetalleCarrera({ torneo, carrera }: DetalleCarreraProps) {
                       : '—'}
                   </td>
                   <td className={styles.tdElo}>
-                    {posicionCarreraNum >= 1 ? (
-                      <>
-                        {posicionCarreraNum <= 8 ? (
-                          <span className={styles.eloDeltaSuma}>
-                            +{9 - posicionCarreraNum}{' '}
-                          </span>
-                        ) : (
-                          <span className={styles.eloDeltaResta}>
-                            {8 - posicionCarreraNum}{' '}
-                          </span>
-                        )}
-                        {eloPorPosicion(posicionCarreraNum)}
-                      </>
-                    ) : (
+                    {posicionCarreraNum >= 1 ? (() => {
+                      const delta = deltaEloPorPosicion(posicionCarreraNum)
+                      const eloPrevio = eloPrevioMap.get(corredor.id) ?? ELO_BASE
+                      return (
+                        <>
+                          {delta >= 0 ? (
+                            <span className={styles.eloDeltaSuma}>
+                              +{delta}{' '}
+                            </span>
+                          ) : (
+                            <span className={styles.eloDeltaResta}>
+                              {delta}{' '}
+                            </span>
+                          )}
+                          {eloPrevio + delta}
+                        </>
+                      )
+                    })() : (
                       '—'
                     )}
                   </td>
