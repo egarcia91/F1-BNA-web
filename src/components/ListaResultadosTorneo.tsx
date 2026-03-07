@@ -44,6 +44,7 @@ function calcularDetallePilotos(
   const puntosPorPos = new Map(tabla.map((r) => [Number(r.posicion), r.puntos]))
   const desgloseMap = new Map<string, DesgloseSerie[]>()
   const totalMap = new Map<string, number>()
+  const equipoEnCarrera = new Map<string, string>()
 
   for (const carrera of torneo.carreras) {
     const listas = listasDeCorrredores(carrera)
@@ -77,7 +78,8 @@ function calcularDetallePilotos(
             if (vo < vueltasPropias) rezagados += vueltasPropias - vo
           }
         }
-        const ptsRez = rezagados * PTS_POR_REZAGADO
+        const MAX_PTS_REZAGADOS = 5
+        const ptsRez = Math.min(rezagados * PTS_POR_REZAGADO, MAX_PTS_REZAGADOS)
 
         const pole = largada === 1
         const mantuvoPosicion = !!(largada && largada === posFinal)
@@ -87,6 +89,10 @@ function calcularDetallePilotos(
           + (pole ? PTS_POLE : 0)
           + (mantuvoPosicion ? PTS_MANTENER_POS : 0)
           + (vueltaRapida ? PTS_VUELTA_RAPIDA : 0)
+
+        if (c.equipo && !equipoEnCarrera.has(c.id)) {
+          equipoEnCarrera.set(c.id, c.equipo)
+        }
 
         const arr = desgloseMap.get(c.id) ?? []
         arr.push({
@@ -118,7 +124,7 @@ function calcularDetallePilotos(
         id,
         nombre: base?.nombre ?? id,
         apellido: base?.apellido,
-        equipo: base?.equipo,
+        equipo: equipoEnCarrera.get(id) ?? base?.equipo,
         puntos: pts,
         desglose: desgloseMap.get(id) ?? [],
       }

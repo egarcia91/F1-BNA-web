@@ -367,6 +367,10 @@
   }
 }
 
+.thTiempo {
+  text-align: right;
+}
+
 .tdTiempo {
   text-align: right;
   font-variant-numeric: tabular-nums;
