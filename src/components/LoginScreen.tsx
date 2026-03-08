@@ -1,5 +1,7 @@
 import { useGoogleLogin } from '@react-oauth/google'
+import { GoogleAuthProvider, signInWithCredential } from 'firebase/auth'
 import { useAuth, type User } from '../context/AuthContext'
+import { getAuthLazy } from '../lib/firebase'
 import styles from './LoginScreen.module.css'
 
 const clientId = (import.meta.env.VITE_GOOGLE_CLIENT_ID ?? '').trim()
@@ -20,8 +22,9 @@ function BotonGoogleLoginOAuth() {
   const { login } = useAuth()
   const googleLogin = useGoogleLogin({
     onSuccess: (tokenResponse) => {
+      const accessToken = tokenResponse.access_token
       fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-        headers: { Authorization: `Bearer ${tokenResponse.access_token}` },
+        headers: { Authorization: `Bearer ${accessToken}` },
       })
         .then((res) => res.json())
         .then((data: { email?: string; name?: string; picture?: string }) => {
@@ -30,7 +33,14 @@ function BotonGoogleLoginOAuth() {
             name: data.name ?? data.email?.split('@')[0] ?? 'Usuario',
             picture: data.picture,
           }
-          if (user.email) login(user)
+          if (user.email) {
+            login(user)
+            const auth = getAuthLazy()
+            if (auth) {
+              const credential = GoogleAuthProvider.credential(null, accessToken)
+              signInWithCredential(auth, credential).catch(() => {})
+            }
+          }
         })
         .catch(() => {})
     },

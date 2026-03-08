@@ -1,5 +1,7 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
+import { signInWithPopup, GoogleAuthProvider, type User as FirebaseUser } from 'firebase/auth'
 import { useAuth } from '../context/AuthContext'
+import { getAuthLazy } from '../lib/firebase'
 import { useGaleria, type MediaItem } from '../hooks/useGaleria'
 import styles from './GaleriaCarrera.module.css'
 
@@ -52,21 +54,52 @@ function VideoEmbed({ url }: { url: string }) {
   )
 }
 
+function useFirebaseAuth() {
+  const [fbUser, setFbUser] = useState<FirebaseUser | null>(null)
+  useEffect(() => {
+    const auth = getAuthLazy()
+    if (!auth) return
+    setFbUser(auth.currentUser)
+    const unsub = auth.onAuthStateChanged(setFbUser)
+    return unsub
+  }, [])
+  return fbUser
+}
+
 export function GaleriaCarrera({ torneoId, carreraId }: GaleriaCarreraProps) {
   const { user } = useAuth()
+  const fbUser = useFirebaseAuth()
   const { items, cargando, subirFoto, agregarVideo, eliminar } = useGaleria(torneoId, carreraId)
   const [videoUrl, setVideoUrl] = useState('')
   const [fotoAmpliada, setFotoAmpliada] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+
+  const puedeSubir = Boolean(user && fbUser)
 
   const fotos = items.filter((i) => i.tipo === 'foto')
   const videos = items.filter((i) => i.tipo === 'video')
 
+  const handleLoginFirebase = async () => {
+    setError(null)
+    try {
+      const auth = getAuthLazy()
+      if (auth) await signInWithPopup(auth, new GoogleAuthProvider())
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Error al autenticar')
+    }
+  }
+
   const handleSubirFotos = async (files: FileList | null) => {
     if (!files) return
-    for (const file of Array.from(files)) {
-      if (!file.type.startsWith('image/')) continue
-      await subirFoto(file, user?.email ?? undefined)
+    setError(null)
+    try {
+      for (const file of Array.from(files)) {
+        if (!file.type.startsWith('image/')) continue
+        await subirFoto(file, user?.email ?? undefined)
+      }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Error al subir la foto')
     }
     if (inputRef.current) inputRef.current.value = ''
   }
@@ -74,19 +107,33 @@ export function GaleriaCarrera({ torneoId, carreraId }: GaleriaCarreraProps) {
   const handleAgregarVideo = async () => {
     const url = videoUrl.trim()
     if (!url) return
-    await agregarVideo(url, user?.email ?? undefined)
-    setVideoUrl('')
+    setError(null)
+    try {
+      await agregarVideo(url, user?.email ?? undefined)
+      setVideoUrl('')
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Error al agregar el video')
+    }
   }
 
   const handleEliminar = (item: MediaItem) => {
-    if (confirm('¿Eliminar este elemento?')) eliminar(item)
+    if (confirm('¿Eliminar este elemento?')) {
+      setError(null)
+      eliminar(item).catch((e) => setError(e instanceof Error ? e.message : 'Error al eliminar'))
+    }
   }
 
   return (
     <div className={styles.galeria}>
       <h3 className={styles.titulo}>Galería</h3>
 
-      {user && (
+      {user && !fbUser && (
+        <button type="button" className={styles.botonSubir} onClick={handleLoginFirebase}>
+          Autenticar para subir contenido
+        </button>
+      )}
+
+      {puedeSubir && (
         <div className={styles.controles}>
           <div className={styles.controlFoto}>
             <label className={styles.botonSubir}>
@@ -123,6 +170,8 @@ export function GaleriaCarrera({ torneoId, carreraId }: GaleriaCarreraProps) {
         </div>
       )}
 
+      {error && <p className={styles.error}>{error}</p>}
+
       {fotos.length > 0 && (
         <div className={styles.seccion}>
           <h4 className={styles.seccionTitulo}>Fotos</h4>
@@ -136,7 +185,7 @@ export function GaleriaCarrera({ torneoId, carreraId }: GaleriaCarreraProps) {
                   onClick={() => setFotoAmpliada(item.url)}
                   loading="lazy"
                 />
-                {user && (
+                {puedeSubir && (
                   <button
                     type="button"
                     className={styles.botonEliminar}
@@ -159,7 +208,7 @@ export function GaleriaCarrera({ torneoId, carreraId }: GaleriaCarreraProps) {
             {videos.map((item) => (
               <div key={item.id} className={styles.videoWrapper}>
                 <VideoEmbed url={item.url} />
-                {user && (
+                {puedeSubir && (
                   <button
                     type="button"
                     className={styles.botonEliminar}

@@ -91,6 +91,16 @@
   cursor: default;
 }
 
+.error {
+  color: #ef4444;
+  font-size: 0.85rem;
+  margin: 0 0 0.75rem;
+  padding: 0.5rem 0.75rem;
+  background: rgba(239, 68, 68, 0.1);
+  border-radius: 4px;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
 .seccion {
   margin-bottom: 1rem;
 }
