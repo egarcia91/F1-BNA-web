@@ -14,7 +14,26 @@ import { BannerRegistroPiloto } from './components/BannerRegistroPiloto'
 import { PanelDatosPiloto } from './components/PanelDatosPiloto'
 import { LoginScreen } from './components/LoginScreen'
 
-const NOMBRE_PROXIMA_CARRERA = '"Night Race" el 5 de marzo'
+function buscarProximaCarrera(torneos: Torneo[]): { nombre: string; fecha: Date; dias: number } | null {
+  const hoy = new Date()
+  hoy.setHours(0, 0, 0, 0)
+  let mejor: { nombre: string; fecha: Date; dias: number } | null = null
+  for (const t of torneos) {
+    for (const c of t.carreras) {
+      const partes = c.fecha.match(/^(\d{4})-(\d{2})-(\d{2})$/)
+      if (!partes) continue
+      const fecha = new Date(Number(partes[1]), Number(partes[2]) - 1, Number(partes[3]))
+      fecha.setHours(0, 0, 0, 0)
+      const diff = fecha.getTime() - hoy.getTime()
+      if (diff < 0) continue
+      const dias = Math.ceil(diff / (1000 * 60 * 60 * 24))
+      if (!mejor || dias < mejor.dias) {
+        mejor = { nombre: c.nombre, fecha, dias }
+      }
+    }
+  }
+  return mejor
+}
 
 function App() {
   const { user, isLoading, logout } = useAuth()
@@ -30,7 +49,6 @@ function App() {
   const [guardandoAsistencia, setGuardandoAsistencia] = useState(false)
 
   const miPiloto = user?.email ? pilotos.find((p) => p.email === user.email) : null
-  const debeConfirmarAsistencia = Boolean(miPiloto && !miPiloto.presenteSiguienteCarrera)
   const carrerasDelTorneo = torneoSeleccionado?.carreras ?? []
   const toggleCarrera = (carrera: Carrera) => {
     setCarreraSeleccionada((actual) =>
@@ -38,12 +56,8 @@ function App() {
     )
   }
 
-  const proximaCarrera = new Date(2026, 2, 5) // 5 de marzo de 2026
-  const hoy = new Date()
-  hoy.setHours(0, 0, 0, 0)
-  proximaCarrera.setHours(0, 0, 0, 0)
-  const diffMs = proximaCarrera.getTime() - hoy.getTime()
-  const diasHastaCarrera = Math.max(0, Math.ceil(diffMs / (1000 * 60 * 60 * 24)))
+  const proximaCarrera = buscarProximaCarrera(torneos)
+  const debeConfirmarAsistencia = Boolean(proximaCarrera && miPiloto && !miPiloto.presenteSiguienteCarrera)
 
   const handleConfirmarAsistencia = async (presente: boolean) => {
     if (!miPiloto) return
@@ -118,25 +132,27 @@ function App() {
             </button>
           </span>
         </div>
-        {debeConfirmarAsistencia ? (
-          <button
-            type="button"
-            className="cartelProximaCarrera cartelProximaCarreraPendiente"
-            onClick={() => setConfirmarAsistenciaAbierto(true)}
-            title="Confirmar si vas a la próxima carrera"
-          >
-            Faltan {diasHastaCarrera} días
-          </button>
-        ) : (
-          <span className="cartelProximaCarrera">
-            Faltan {diasHastaCarrera} días
-          </span>
+        {proximaCarrera && (
+          debeConfirmarAsistencia ? (
+            <button
+              type="button"
+              className="cartelProximaCarrera cartelProximaCarreraPendiente"
+              onClick={() => setConfirmarAsistenciaAbierto(true)}
+              title="Confirmar si vas a la próxima carrera"
+            >
+              Faltan {proximaCarrera.dias} días
+            </button>
+          ) : (
+            <span className="cartelProximaCarrera">
+              Faltan {proximaCarrera.dias} días
+            </span>
+          )
         )}
       </header>
       {confirmarAsistenciaAbierto && miPiloto && (
         <div className="modalOverlay" role="dialog" aria-modal="true" aria-labelledby="modal-asistencia-titulo">
           <div className="modalConfirmarAsistencia">
-            <h2 id="modal-asistencia-titulo">¿Vas a asistir a la {NOMBRE_PROXIMA_CARRERA}?</h2>
+            <h2 id="modal-asistencia-titulo">¿Vas a asistir a la "{proximaCarrera?.nombre}"?</h2>
             <div className="modalConfirmarAsistenciaBotones">
               <button type="button" className="modalBotonSi" onClick={() => handleConfirmarAsistencia(true)} disabled={guardandoAsistencia}>
                 {guardandoAsistencia ? '…' : 'Sí'}

@@ -1,6 +1,7 @@
 import { initializeApp } from 'firebase/app'
 import { getAuth } from 'firebase/auth'
 import { getFirestore } from 'firebase/firestore'
+import { getStorage } from 'firebase/storage'
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -19,16 +20,17 @@ function hasValidConfig(): boolean {
 let app: ReturnType<typeof initializeApp> | null = null
 let db: ReturnType<typeof getFirestore> | null = null
 let auth: ReturnType<typeof getAuth> | null = null
+let storage: ReturnType<typeof getStorage> | null = null
 
 if (hasValidConfig()) {
   try {
     app = initializeApp(firebaseConfig)
     db = getFirestore(app)
-    // Auth no se inicializa al cargar para evitar 400 CONFIGURATION_NOT_FOUND
-    // si Authentication no está habilitado en la consola. Se obtiene con getAuthLazy().
+    storage = getStorage(app)
   } catch {
     app = null
     db = null
+    storage = null
   }
 }
 
@@ -39,5 +41,5 @@ export function getAuthLazy(): ReturnType<typeof getAuth> | null {
   return auth
 }
 
-export { db, auth }
+export { db, auth, storage }
 export const isFirebaseEnabled = (): boolean => db != null

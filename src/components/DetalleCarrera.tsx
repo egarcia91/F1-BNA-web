@@ -7,9 +7,8 @@ import { getAuthLazy } from '../lib/firebase'
 import { votarMvp } from '../lib/votarMvp'
 import { useVotosMvp } from '../hooks/useVotosMvp'
 import { ELO_BASE, eloAntesDeLaCarrera, calcularDeltaParaPosicion, calcularEloGlobal } from '../lib/elo'
+import { GaleriaCarrera } from './GaleriaCarrera'
 import styles from './DetalleCarrera.module.css'
-
-const NOMBRE_CARRERA_ANOTADOS = 'Night Race'
 
 interface DetalleCarreraProps {
   torneo: Torneo | null
@@ -126,10 +125,6 @@ export function DetalleCarrera({ torneo, carrera }: DetalleCarreraProps) {
   )
   const carreraFinalizada = Boolean(carrera && todosCorredoresCarrera.length > 0)
 
-  const anotados = useMemo(
-    () => (carrera?.nombre === NOMBRE_CARRERA_ANOTADOS ? pilotos.filter((p) => p.presenteSiguienteCarrera === true) : []),
-    [carrera?.nombre, pilotos]
-  )
 
   const mostrarColumnasCompletas =
     !!carrera &&
@@ -719,21 +714,8 @@ export function DetalleCarrera({ torneo, carrera }: DetalleCarreraProps) {
           )}
         </div>
       )}
-      {carrera.nombre === NOMBRE_CARRERA_ANOTADOS && (
-        <div className={styles.bloqueAnotados}>
-          <h3 className={styles.subtitulo}>Anotados</h3>
-          {anotados.length === 0 ? (
-            <p className={styles.anotadosVacio}>Nadie anotado aún.</p>
-          ) : (
-            <ul className={styles.listaAnotados}>
-              {anotados.map((p) => (
-                <li key={p.id} className={styles.itemAnotado}>
-                  {nombreCompletoCorredor(p)}
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
+      {torneo && carrera && todosCorredoresCarrera.length > 0 && (
+        <GaleriaCarrera torneoId={torneo.id} carreraId={carrera.id} />
       )}
     </section>
   )
