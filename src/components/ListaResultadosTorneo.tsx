@@ -133,25 +133,52 @@ function calcularDetallePilotos(
 
 type ModoResultados = 'pilotos' | 'constructores'
 
-interface FilaConstructor {
-  equipo: string
+interface FilaConstructorPiloto {
+  nombre: string
+  apellido?: string
   puntos: number
-  pilotos: { nombre: string; apellido?: string; puntos: number }[]
+  /** true si este piloto entra en el TOP_PILOTOS_CONSTRUCTORES y suma puntos al equipo */
+  cuenta: boolean
 }
 
+interface FilaConstructor {
+  equipo: string
+  /** Suma de los TOP_PILOTOS_CONSTRUCTORES pilotos con más puntos del equipo */
+  puntos: number
+  pilotos: FilaConstructorPiloto[]
+}
+
+/** Cantidad de pilotos por equipo que suman al constructor */
+const TOP_PILOTOS_CONSTRUCTORES = 3
+
 function agruparPorConstructor(detalle: DetallePiloto[]): FilaConstructor[] {
-  const equipoMap = new Map<string, FilaConstructor>()
+  const equipoMap = new Map<string, FilaConstructorPiloto[]>()
   for (const d of detalle) {
     const eq = d.equipo ?? 'Sin equipo'
-    const entry = equipoMap.get(eq) ?? { equipo: eq, puntos: 0, pilotos: [] }
-    entry.puntos += d.puntos
-    entry.pilotos.push({ nombre: d.nombre, apellido: d.apellido, puntos: d.puntos })
-    equipoMap.set(eq, entry)
+    const arr = equipoMap.get(eq) ?? []
+    arr.push({
+      nombre: d.nombre,
+      apellido: d.apellido,
+      puntos: d.puntos,
+      cuenta: false,
+    })
+    equipoMap.set(eq, arr)
   }
-  for (const entry of equipoMap.values()) {
-    entry.pilotos.sort((a, b) => b.puntos - a.puntos)
+
+  const filas: FilaConstructor[] = []
+  for (const [equipo, pilotos] of equipoMap.entries()) {
+    pilotos.sort((a, b) => b.puntos - a.puntos)
+    let total = 0
+    pilotos.forEach((p, i) => {
+      if (i < TOP_PILOTOS_CONSTRUCTORES) {
+        p.cuenta = true
+        total += p.puntos
+      }
+    })
+    filas.push({ equipo, puntos: total, pilotos })
   }
-  return [...equipoMap.values()].sort((a, b) => b.puntos - a.puntos)
+
+  return filas.sort((a, b) => b.puntos - a.puntos)
 }
 
 function ModalDetallePiloto({ piloto, onClose }: { piloto: DetallePiloto; onClose: () => void }) {
@@ -239,6 +266,9 @@ function ModalDetalleConstructor({ fila, onClose }: { fila: FilaConstructor; onC
           <button type="button" className={styles.modalCerrar} onClick={onClose}>✕</button>
         </div>
         <div className={styles.modalBody}>
+          <p className={styles.desgloseAyuda}>
+            Suma los {TOP_PILOTOS_CONSTRUCTORES} pilotos con más puntos de cada equipo.
+          </p>
           <table className={styles.desgloseTabla}>
             <thead>
               <tr>
@@ -248,8 +278,17 @@ function ModalDetalleConstructor({ fila, onClose }: { fila: FilaConstructor; onC
             </thead>
             <tbody>
               {fila.pilotos.map((p) => (
-                <tr key={`${p.nombre}-${p.apellido}`}>
-                  <td className={styles.desgloseTd}>{p.nombre}{p.apellido ? ` ${p.apellido}` : ''}</td>
+                <tr
+                  key={`${p.nombre}-${p.apellido}`}
+                  className={!p.cuenta ? styles.pilotoNoSuma : undefined}
+                  title={!p.cuenta ? 'No suma al equipo (queda fuera del top)' : undefined}
+                >
+                  <td className={styles.desgloseTd}>
+                    {p.nombre}{p.apellido ? ` ${p.apellido}` : ''}
+                    {!p.cuenta && (
+                      <span className={styles.pilotoNoSumaTag}> (no suma)</span>
+                    )}
+                  </td>
                   <td className={styles.desgloseTdPts}>{p.puntos} pts</td>
                 </tr>
               ))}

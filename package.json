@@ -8,7 +8,8 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "seed:firestore": "tsx scripts/seed-firestore.ts"
+    "seed:firestore": "tsx scripts/seed-firestore.ts",
+    "update:carreras": "tsx scripts/actualizar-carreras.ts"
   },
   "dependencies": {
     "@react-oauth/google": "^0.13.4",

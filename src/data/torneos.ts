@@ -143,7 +143,7 @@ export const torneos: Torneo[] = [
       {
         id: '3',
         nombre: 'Grilla Invertida',
-        fecha: 'a definir',
+        fecha: '2026-06-15',
         lugar: 'Kartódromo Sur',
         detalle: 'Hora de probar si los mejores son los más veloces. Todas las posiciones obtenidas en la Night Race serán el inverso de su posición de largada en esta carrera.',
         corredores: [],

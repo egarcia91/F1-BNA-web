@@ -127,6 +127,18 @@
   color: #000;
 }
 
+/* Fondo blanco para ítems Williams, letras en azul Williams */
+.itemWilliams {
+  background: #fff;
+  border-color: #ddd;
+}
+
+.itemWilliams .itemContenido .nombre,
+.itemWilliams .dato,
+.itemWilliams .datoLabel {
+  color: #005aff;
+}
+
 .itemFerrari .itemContenido .nombre {
   color: #000;
 }
@@ -184,6 +196,7 @@
   /* Fondos claros: flecha oscura para contraste */
   .itemMcLaren .itemChevron,
   .itemMercedes .itemChevron,
+  .itemWilliams .itemChevron,
   .itemAlpine .itemChevron,
   .itemFerrari .itemChevron {
     color: #1a1a1a;
@@ -191,6 +204,7 @@
   }
   .itemMcLaren .itemChevron:hover,
   .itemMercedes .itemChevron:hover,
+  .itemWilliams .itemChevron:hover,
   .itemAlpine .itemChevron:hover,
   .itemFerrari .itemChevron:hover {
     color: #000;
@@ -233,6 +247,17 @@
   background: rgba(0, 0, 0, 0.1);
   color: #000;
   border-color: rgba(0, 0, 0, 0.5);
+}
+
+.itemWilliams .eloChartToggle {
+  border-color: rgba(0, 90, 255, 0.4);
+  color: rgba(0, 90, 255, 0.7);
+}
+
+.itemWilliams .eloChartToggle:hover {
+  background: rgba(0, 90, 255, 0.1);
+  color: #005aff;
+  border-color: #005aff;
 }
 
 .itemFerrari .eloChartToggle {
@@ -379,6 +404,10 @@
 .itemFerrari .datoFraseValor,
 .itemAlpine .datoFraseValor {
   color: #000;
+}
+
+.itemWilliams .datoFraseValor {
+  color: #005aff;
 }
 
 .itemRedBull .datoFraseValor {

@@ -166,7 +166,9 @@ export function SeccionPilotos() {
                       ? `${styles.item} ${styles.itemMcLaren}`
                       : piloto.equipo === 'Mercedes'
                         ? `${styles.item} ${styles.itemMercedes}`
-                        : styles.item
+                        : piloto.equipo === 'Williams'
+                          ? `${styles.item} ${styles.itemWilliams}`
+                          : styles.item
           const expandido = expandidoId === piloto.id
           return (
           <li
@@ -227,12 +229,19 @@ export function SeccionPilotos() {
                   className={styles.logoEscuderia}
                 />
               )}
+              {piloto.equipo === 'Williams' && (
+                <img
+                  src={publicAsset('/williams.png')}
+                  alt=""
+                  className={styles.logoEscuderia}
+                />
+              )}
             </div>
             <div className={styles.itemContenido}>
               <div className={styles.itemContenidoNombreYFoto}>
                 <div className={styles.itemContenidoIzq}>
                   <span className={styles.nombre}>{nombreCompleto(piloto)}</span>
-                  {piloto.equipo !== 'Red Bull' && piloto.equipo !== 'Aston Martin' && piloto.equipo !== 'Alpine' && piloto.equipo !== 'Ferrari' && piloto.equipo !== 'McLaren' && piloto.equipo !== 'Mercedes' && (
+                  {piloto.equipo !== 'Red Bull' && piloto.equipo !== 'Aston Martin' && piloto.equipo !== 'Alpine' && piloto.equipo !== 'Ferrari' && piloto.equipo !== 'McLaren' && piloto.equipo !== 'Mercedes' && piloto.equipo !== 'Williams' && (
                     <span className={styles.escuderia}>{piloto.equipo ?? '—'}</span>
                   )}
                 </div>
