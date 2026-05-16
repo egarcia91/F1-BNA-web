@@ -94,21 +94,15 @@ function mejorPuestoPorPiloto(torneos: Torneo[]): Map<string, number> {
 }
 
 
+type OrdenPilotos = 'equipo' | 'ranking' | 'sin-filtro'
+
 export function SeccionPilotos() {
   const { pilotos, torneos } = useData()
   const [visible, setVisible] = useState(false)
   const [fotosFallidas, setFotosFallidas] = useState<Set<string>>(new Set())
   const [expandidoId, setExpandidoId] = useState<string | null>(null)
+  const [orden, setOrden] = useState<OrdenPilotos>('equipo')
   const esMovil = useEsMovil()
-
-  const pilotosOrdenados = useMemo(() => {
-    return [...pilotos].sort((a, b) => {
-      const equipoA = (a.equipo ?? '').toLowerCase()
-      const equipoB = (b.equipo ?? '').toLowerCase()
-      if (equipoA !== equipoB) return equipoA.localeCompare(equipoB)
-      return nombreCompleto(a).localeCompare(nombreCompleto(b), undefined, { sensitivity: 'base' })
-    })
-  }, [pilotos])
 
   const carrerasPorPiloto = useMemo(() => contarCarrerasPorPiloto(torneos), [torneos])
   const mejorPuestoPorPilotoMap = useMemo(() => mejorPuestoPorPiloto(torneos), [torneos])
@@ -116,6 +110,38 @@ export function SeccionPilotos() {
   const eloPorPilotoMap = eloSnapshot.eloMap
   const eloHistorialMap = eloSnapshot.historial
   const eloFechasMap = eloSnapshot.fechas
+
+  const pilotosOrdenados = useMemo(() => {
+    const list = [...pilotos]
+    if (orden === 'equipo') {
+      return list
+        .filter((p) => !!p.equipo && p.equipo.trim() !== '')
+        .sort((a, b) => {
+          const equipoA = (a.equipo ?? '').toLowerCase()
+          const equipoB = (b.equipo ?? '').toLowerCase()
+          if (equipoA !== equipoB) return equipoA.localeCompare(equipoB)
+          return nombreCompleto(a).localeCompare(nombreCompleto(b), undefined, { sensitivity: 'base' })
+        })
+    }
+    if (orden === 'ranking') {
+      return list
+        .filter((p) => (carrerasPorPiloto.get(p.id) ?? 0) > 0)
+        .sort((a, b) => {
+          const eloA = eloPorPilotoMap.get(a.id) ?? ELO_BASE
+          const eloB = eloPorPilotoMap.get(b.id) ?? ELO_BASE
+          if (eloA !== eloB) return eloB - eloA
+          return nombreCompleto(a).localeCompare(nombreCompleto(b), undefined, { sensitivity: 'base' })
+        })
+    }
+    // sin-filtro: todos los pilotos, ordenados por apellido alfabéticamente
+    return list.sort((a, b) => {
+      const apA = (a.apellido ?? a.nombre ?? '').toLowerCase()
+      const apB = (b.apellido ?? b.nombre ?? '').toLowerCase()
+      const cmp = apA.localeCompare(apB, undefined, { sensitivity: 'base' })
+      if (cmp !== 0) return cmp
+      return (a.nombre ?? '').localeCompare(b.nombre ?? '', undefined, { sensitivity: 'base' })
+    })
+  }, [pilotos, orden, carrerasPorPiloto, eloPorPilotoMap])
 
   const [chartAbierto, setChartAbierto] = useState<Set<string>>(new Set())
 
@@ -151,6 +177,23 @@ export function SeccionPilotos() {
         </span>
       </button>
       {visible && (
+      <>
+      <div className={styles.filtroBarra}>
+        <label htmlFor="pilotos-orden-select" className={styles.filtroLabel}>
+          Ordenar por:
+        </label>
+        <select
+          id="pilotos-orden-select"
+          className={styles.filtroSelect}
+          value={orden}
+          onChange={(e) => setOrden(e.target.value as OrdenPilotos)}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <option value="equipo">Equipo</option>
+          <option value="ranking">Ranking</option>
+          <option value="sin-filtro">Sin filtro</option>
+        </select>
+      </div>
       <ul id="seccion-pilotos-lista" className={styles.lista}>
         {pilotosOrdenados.map((piloto) => {
           const itemClases =
@@ -363,6 +406,7 @@ export function SeccionPilotos() {
           )
         })}
       </ul>
+      </>
       )}
     </section>
   )
