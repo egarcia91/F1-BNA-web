@@ -157,6 +157,7 @@ export const torneos: Torneo[] = [
         detalle: 'Serán los 10 pilotos más veloces de las instancias anteriores y los 5 pilotos del equipo con más puntos.',
         series: [
           { nombre: 'Serie 1', horario: '18:30' },
+          { nombre: 'Serie 2', horario: '19:00' },
         ],
         corredoresPorSerie: {
           '18:30': [
@@ -174,6 +175,22 @@ export const torneos: Torneo[] = [
             { id: 'c22', nombre: 'German Panunzio', datos: { karting: 10, vueltas: 18, mejorTiempo: 45.794, ordenLargada: 10 } },
             { id: 'c25', nombre: 'Roberto Piombi', datos: { karting: 5, vueltas: 18, mejorTiempo: 45.522, ordenLargada: 13 } },
             { id: 'inv-nicolas-barreiro', nombre: 'Nicolas Barreiro (invitado)', datos: { karting: 6, vueltas: 17, mejorTiempo: 46.395, ordenLargada: 12 } },
+          ],
+          '19:00': [
+            { id: 'c26', nombre: 'Manuel Cavallero', datos: { karting: 22, vueltas: 20, mejorTiempo: 39.918, ordenLargada: 3 } },
+            { id: 'c30', nombre: 'Mauro Martini', datos: { karting: 19, vueltas: 20, mejorTiempo: 40.261, ordenLargada: 1 } },
+            { id: 'c35', nombre: 'Marcelo Montalto', datos: { karting: 12, vueltas: 20, mejorTiempo: 40.466, ordenLargada: 2 } },
+            { id: 'c32', nombre: 'Ian Cinti', datos: { karting: 5, vueltas: 20, mejorTiempo: 40.190 } },
+            { id: 'c2', nombre: 'Ezequiel Garcia', datos: { karting: 16, vueltas: 20, mejorTiempo: 40.644, ordenLargada: 5 } },
+            { id: 'c5', nombre: 'Matias Amado', datos: { karting: 17, vueltas: 20, mejorTiempo: 41.700, ordenLargada: 6 } },
+            { id: 'c16', nombre: 'Sebastian Egozcue', datos: { karting: 20, vueltas: 20, mejorTiempo: 41.610 } },
+            { id: 'c28', nombre: 'Lucas Lo Faro', datos: { karting: 9, vueltas: 19, mejorTiempo: 41.281 } },
+            { id: 'c4', nombre: 'Ezequiel Salvemini', datos: { karting: 8, vueltas: 19, mejorTiempo: 41.713, ordenLargada: 4 } },
+            { id: 'c7', nombre: 'Alejandro Lafuente', datos: { karting: 11, vueltas: 19, mejorTiempo: 42.053 } },
+            { id: 'c41', nombre: 'Facundo Fulco', datos: { karting: 6, vueltas: 19, mejorTiempo: 42.929 } },
+            { id: 'c1', nombre: 'Martin Pena', datos: { karting: 10, vueltas: 19, mejorTiempo: 42.054 } },
+            { id: 'c29', nombre: 'Marcelo Souto', datos: { karting: 7, vueltas: 19, mejorTiempo: 42.057 } },
+            { id: 'c20', nombre: 'Javier Boero', datos: { karting: 18, vueltas: 18, mejorTiempo: 44.193 } },
           ],
         },
         corredores: [],

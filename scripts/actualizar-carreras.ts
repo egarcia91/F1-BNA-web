@@ -76,6 +76,24 @@ const FINAL_SERIE_1 = [
   c('inv-nicolas-barreiro', 'Nicolas Barreiro (invitado)', 6, 17, 46.395, 12),
 ]
 
+// Final (17-07-2026) — Serie 2 (14 pilotos, algunas largadas pendientes)
+const FINAL_SERIE_2 = [
+  c('c26', 'Manuel Cavallero', 22, 20, 39.918, 3),
+  c('c30', 'Mauro Martini', 19, 20, 40.261, 1),
+  c('c35', 'Marcelo Montalto', 12, 20, 40.466, 2),
+  c('c32', 'Ian Cinti', 5, 20, 40.190),
+  c('c2', 'Ezequiel Garcia', 16, 20, 40.644, 5),
+  c('c5', 'Matias Amado', 17, 20, 41.700, 6),
+  c('c16', 'Sebastian Egozcue', 20, 20, 41.610),
+  c('c28', 'Lucas Lo Faro', 9, 19, 41.281),
+  c('c4', 'Ezequiel Salvemini', 8, 19, 41.713, 4),
+  c('c7', 'Alejandro Lafuente', 11, 19, 42.053),
+  c('c41', 'Facundo Fulco', 6, 19, 42.929),
+  c('c1', 'Martin Pena', 10, 19, 42.054),
+  c('c29', 'Marcelo Souto', 7, 19, 42.057),
+  c('c20', 'Javier Boero', 18, 18, 44.193),
+]
+
 // ──────────────────────────────────────────────────────────────────────────────
 // EDITAR AQUÍ los cambios que se quieran aplicar.
 // ──────────────────────────────────────────────────────────────────────────────
@@ -89,9 +107,11 @@ const PATCHES: CarreraPatch[] = [
       fecha: '2026-07-17',
       series: [
         { nombre: 'Serie 1', horario: '18:30' },
+        { nombre: 'Serie 2', horario: '19:00' },
       ],
       corredoresPorSerie: {
         '18:30': FINAL_SERIE_1,
+        '19:00': FINAL_SERIE_2,
       },
       corredores: [],
     },
@@ -100,7 +120,7 @@ const PATCHES: CarreraPatch[] = [
 
 // Carreras a eliminar por completo del torneo (se borran de Firestore).
 const CARRERAS_A_ELIMINAR: CarreraDelete[] = [
-  { torneoId: 't2', carreraId: '4' }, // Sentido Antihorario (no se corre)
+  // Sentido Antihorario ya eliminada. Vacío hasta próxima necesidad.
 ]
 // ──────────────────────────────────────────────────────────────────────────────
 
