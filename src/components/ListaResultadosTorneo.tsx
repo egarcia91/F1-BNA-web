@@ -335,7 +335,7 @@ export function ListaResultadosTorneo({ torneo }: ListaResultadosTorneoProps) {
 
   if (!torneo || (filasPilotos.length === 0 && !hayResultadosEstáticos)) return null
 
-  const tituloItem = enProgreso ? 'Resultados Parciales' : 'Resultados finales'
+  const tituloItem = enProgreso ? 'Resultados Parciales' : 'Puntaje Final'
 
   return (
     <section className={styles.section}>

@@ -82,7 +82,7 @@ export const torneos: Torneo[] = [
   {
     id: 't2',
     nombre: 'Copa BNA 2026',
-    estado: 'en_progreso',
+    estado: 'concluido',
     lugar: 'Sedes rotativas (ver cada fecha)',
     reglas: [
       'Cuatro fechas. Suma de puntos define el campeón.',

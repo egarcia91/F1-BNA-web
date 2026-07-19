@@ -38,6 +38,12 @@ interface CarreraDelete {
   carreraId: string
 }
 
+interface TorneoPatch {
+  torneoId: string
+  /** Campos a actualizar (merge) dentro del documento del torneo. */
+  data: Record<string, unknown>
+}
+
 // Helpers para corredores
 type DatosCorredor = {
   karting: number
@@ -122,6 +128,14 @@ const PATCHES: CarreraPatch[] = [
 const CARRERAS_A_ELIMINAR: CarreraDelete[] = [
   // Sentido Antihorario ya eliminada. Vacío hasta próxima necesidad.
 ]
+
+// Patches a nivel torneo (merge sobre el documento del torneo).
+const TORNEOS_PATCHES: TorneoPatch[] = [
+  {
+    torneoId: 't2', // Copa BNA 2026 → concluido tras la Final del 17-07-2026
+    data: { estado: 'concluido' },
+  },
+]
 // ──────────────────────────────────────────────────────────────────────────────
 
 async function main() {
@@ -143,9 +157,26 @@ async function main() {
   }
   const db = admin.firestore()
 
-  if (PATCHES.length === 0 && CARRERAS_A_ELIMINAR.length === 0) {
-    console.log('No hay patches ni eliminaciones definidas. Editá el script.')
+  if (
+    PATCHES.length === 0 &&
+    CARRERAS_A_ELIMINAR.length === 0 &&
+    TORNEOS_PATCHES.length === 0
+  ) {
+    console.log('No hay cambios definidos. Editá el script.')
     return
+  }
+
+  for (const patch of TORNEOS_PATCHES) {
+    const ref = db.collection('torneos').doc(patch.torneoId)
+    const snap = await ref.get()
+    if (!snap.exists) {
+      console.warn(`  [WARN] Torneo ${patch.torneoId} no existe. Omitido.`)
+      continue
+    }
+    await ref.set(patch.data, { merge: true })
+    console.log(
+      `  Actualizado torneo ${patch.torneoId} → ${Object.keys(patch.data).join(', ')}`
+    )
   }
 
   for (const del of CARRERAS_A_ELIMINAR) {
