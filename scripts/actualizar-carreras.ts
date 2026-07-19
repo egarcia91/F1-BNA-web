@@ -33,6 +33,11 @@ interface CarreraPatch {
   data: Record<string, unknown>
 }
 
+interface CarreraDelete {
+  torneoId: string
+  carreraId: string
+}
+
 // Helpers para corredores
 type DatosCorredor = {
   karting: number
@@ -53,41 +58,22 @@ const c = (
   return { id, nombre, datos }
 }
 
-// Serie 1 - 18:30 (14 pilotos)
-const SERIE_1830 = [
-  c('c28', 'Lucas Lo Faro', 10, 20, 39.412, 1),
-  c('c16', 'Sebastian Egozcue', 12, 20, 40.492, 4),
-  c('c1', 'Martin Pena', 5, 20, 40.716, 3),
-  c('c2', 'Ezequiel Garcia', 19, 20, 40.552, 5),
-  c('c33', 'Bruno Lo Faro', 18, 19, 39.147, 6),
-  c('c15', 'Ignacio Rueda', 22, 19, 41.123, 7),
-  c('c20', 'Javier Boero', 16, 19, 42.091, 9),
-  c('c9', 'Fabian Manquez', 9, 19, 42.091, 10),
-  c('c3', 'Diego Fernandez', 8, 19, 42.386, 8),
-  c('c35', 'Marcelo Montalto', 17, 19, 39.807, 2),
-  c('c8', 'Pablo Carbonell', 4, 18, 42.851, 12),
-  c('c7', 'Alejandro Lafuente', 11, 18, 43.112, 14),
-  c('c6', 'Federico Di Paola', 15, 18, 43.250, 11),
-  c('inv-agustina-boero', 'Agustina Boero (invitada)', 20, 16, 49.502, 13),
-]
-
-// Serie 2 - 19:00 (15 pilotos)
-const SERIE_1900 = [
-  c('c10', 'Ezequiel Barany', 5, 20, 40.670),
-  c('c5', 'Matias Amado', 17, 20, 40.713),
-  c('c41', 'Facundo Fulco', 3, 20, 40.349),
-  c('c32', 'Ian Cinti', 10, 20, 41.108),
-  c('c37', 'Franco Ramponi', 11, 20, 41.280),
-  c('c26', 'Manuel Cavallero', 19, 20, 40.849),
-  c('c19', 'Martin Lombardo', 22, 19, 41.774),
-  c('c29', 'Marcelo Souto', 4, 19, 44.305),
-  c('c4', 'Ezequiel Salvemini', 2, 19, 43.103),
-  c('c36', 'Julian Lods', 20, 19, 44.079),
-  c('c22', 'German Panunzio', 16, 18, 45.686),
-  c('c34', 'Mariano Chara', 15, 18, 44.921),
-  c('c45', 'Ariel Matias Bonomi', 8, 18, 45.630),
-  c('c25', 'Roberto Piombi', 12, 17, 50.609),
-  c('c43', 'Ruslan Sanmartin Sobol', 14, 10, 50.008),
+// Final (17-07-2026) — Serie 1 (14 pilotos, orden = posición final)
+const FINAL_SERIE_1 = [
+  c('c15', 'Ignacio Rueda', 12, 20, 40.915, 1),
+  c('c36', 'Julian Lods', 11, 20, 41.831, 4),
+  c('c9', 'Fabian Manquez', 7, 20, 42.512, 6),
+  c('inv-andres-t', 'Andres T. (invitado)', 18, 20, 42.533, 2),
+  c('c37', 'Franco Ramponi', 16, 20, 42.107, 5),
+  c('c19', 'Martin Lombardo', 8, 19, 42.012, 9),
+  c('c31', 'Matias Duclos', 3, 19, 42.742, 7),
+  c('c3', 'Diego Fernandez', 2, 19, 43.266, 8),
+  c('c27', 'Andres Soto', 22, 19, 41.689, 3),
+  c('c23', 'Federico Mammana', 19, 19, 43.250, 14),
+  c('c17', 'Fernando Longo', 20, 18, 44.416, 11),
+  c('c22', 'German Panunzio', 10, 18, 45.794, 10),
+  c('c25', 'Roberto Piombi', 5, 18, 45.522, 13),
+  c('inv-nicolas-barreiro', 'Nicolas Barreiro (invitado)', 6, 17, 46.395, 12),
 ]
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -96,22 +82,25 @@ const SERIE_1900 = [
 const PATCHES: CarreraPatch[] = [
   {
     torneoId: 't2', // Copa BNA 2026
-    carreraId: '3', // Grilla Invertida
-    // Borro series/corredoresPorSerie viejas para que no queden claves obsoletas
+    carreraId: '5', // Final
+    // Borro series/corredoresPorSerie viejas por si había placeholders
     replaceFields: ['series', 'corredoresPorSerie'],
     data: {
-      fecha: '2026-06-15',
+      fecha: '2026-07-17',
       series: [
         { nombre: 'Serie 1', horario: '18:30' },
-        { nombre: 'Serie 2', horario: '19:00' },
       ],
       corredoresPorSerie: {
-        '18:30': SERIE_1830,
-        '19:00': SERIE_1900,
+        '18:30': FINAL_SERIE_1,
       },
       corredores: [],
     },
   },
+]
+
+// Carreras a eliminar por completo del torneo (se borran de Firestore).
+const CARRERAS_A_ELIMINAR: CarreraDelete[] = [
+  { torneoId: 't2', carreraId: '4' }, // Sentido Antihorario (no se corre)
 ]
 // ──────────────────────────────────────────────────────────────────────────────
 
@@ -134,9 +123,26 @@ async function main() {
   }
   const db = admin.firestore()
 
-  if (PATCHES.length === 0) {
-    console.log('No hay patches definidos. Editá PATCHES en el script.')
+  if (PATCHES.length === 0 && CARRERAS_A_ELIMINAR.length === 0) {
+    console.log('No hay patches ni eliminaciones definidas. Editá el script.')
     return
+  }
+
+  for (const del of CARRERAS_A_ELIMINAR) {
+    const ref = db
+      .collection('torneos')
+      .doc(del.torneoId)
+      .collection('carreras')
+      .doc(del.carreraId)
+    const snap = await ref.get()
+    if (!snap.exists) {
+      console.warn(
+        `  [WARN] Carrera ${del.torneoId}/${del.carreraId} no existe. Omitida.`
+      )
+      continue
+    }
+    await ref.delete()
+    console.log(`  Eliminada carrera ${del.torneoId}/${del.carreraId}`)
   }
 
   for (const patch of PATCHES) {
