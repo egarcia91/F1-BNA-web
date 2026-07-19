@@ -313,13 +313,16 @@ export function ListaResultadosTorneo({ torneo }: ListaResultadosTorneoProps) {
   const enProgreso = torneo?.estado === 'en_progreso'
   const hayResultadosEstáticos =
     torneo?.resultados != null && torneo.resultados.length > 0
+  // Copa 2025 tiene resultados estáticos; Copa 2026 (y futuros) se calculan desde las carreras.
+  // Al marcar concluido no debemos dejar de calcular si no hay array estático.
+  const usarCalculoDinamico = enProgreso || !hayResultadosEstáticos
 
   const detallePilotos = useMemo(() => {
-    if (!torneo || !enProgreso) return []
+    if (!torneo || !usarCalculoDinamico) return []
     return calcularDetallePilotos(torneo, pilotos)
-  }, [torneo, enProgreso, pilotos])
+  }, [torneo, usarCalculoDinamico, pilotos])
 
-  const filasPilotos: Corredor[] = enProgreso
+  const filasPilotos: Corredor[] = usarCalculoDinamico
     ? detallePilotos
     : (torneo?.resultados ?? [])
 
